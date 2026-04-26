@@ -1,7 +1,7 @@
-# [Kiwihacks Podium](https://vote.kiwihacks.org/)
+# Kiwihacks Podium
 
 Peer-judging platform for Kiwihacks hackathons.
-
+Forked from [Hack Club's Podium](https://github.com/hackclub/podium)
 ## How It Works
 
 1. **Sign in** — Magic link authentication
@@ -31,3 +31,5 @@ cd frontend && bun dev
 ```
 
 See [docs/local-dev.md](docs/local-dev.md) for full setup and [docs/kiwihacks-ops.md](docs/kiwihacks-ops.md) for deployment/runbook notes.
+
+
