@@ -8,7 +8,10 @@
   import { fade } from "svelte/transition";
   import Modal from "$lib/components/Modal.svelte";
 
-  let { user }: { user: UserUpdate } = $props();
+  let {
+    user,
+    buttonClass = "btn btn-outline btn-sm",
+  }: { user: UserUpdate; buttonClass?: string } = $props();
 
   let updateModal: Modal = $state() as Modal;
 
@@ -29,7 +32,7 @@
 </script>
 
 <button
-  class="btn btn-outline btn-sm"
+  class={buttonClass}
   onclick={() => {
     updateModal.openModal();
   }}

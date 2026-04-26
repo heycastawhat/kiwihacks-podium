@@ -18,9 +18,11 @@
   import DevModeIndicator from "$lib/components/DevModeIndicator.svelte";
   import { resetAirtableHits } from "$lib/airtable-hits.svelte";
   import { getHasProject } from "$lib/project-state.svelte";
+  import Modal from "$lib/components/Modal.svelte";
 
   let loadingText = $state(returnLoadingText());
   let loadingTextInterval: NodeJS.Timeout = $state() as NodeJS.Timeout;
+  let settingsModal: Modal = $state() as Modal;
 
   // Reactive variables for meta tags to ensure they update properly
   const title = $derived(
@@ -48,6 +50,16 @@
 
   // Check if user has submitted a project
   const hasProject = $derived(getHasProject());
+  const getDisplayName = () => {
+    const user = getAuthenticatedUser().user;
+    return (
+      user.display_name || `${user.first_name} ${user.last_name?.[0] || ""}`
+    ).trim();
+  };
+  const getGreetingName = () => {
+    const user = getAuthenticatedUser().user;
+    return user.first_name?.trim() || getDisplayName();
+  };
 
   // Navigation options — always show Events; show Projects only once user has submitted one
   const navOptions = $derived.by(() => {
@@ -180,12 +192,16 @@
       <div class="min-h-full w-80 bg-base-200 flex flex-col" id="sidebar-ui">
         <!-- Logo/Header -->
         <div class="p-6 border-b border-base-300" id="sidebar-top">
-          <a href="/" class="flex items-center gap-2">
-            <img src="https://kiwihacks.org/assets/kiwihackstext-494RwoFq.png" alt="KiwiHacks Podium" class="h-8 w-auto" />
+          <a href="/" class="sidebar-brand-link flex flex-col gap-1">
+            <img
+              src="/assets/kiwihacks/kiwi-text.png"
+              alt="KiwiHacks"
+              class="sidebar-brand-logo h-8 w-auto"
+            />
+            <p class="sidebar-brand-subtitle text-base-content/70 text-sm">
+              KiwiHacks Podium
+            </p>
           </a>
-          <p class="text-base-content/70 text-sm mt-1">
-            KiwiHacks Podium
-          </p>
         </div>
 
         <!-- Navigation Menu -->
@@ -222,36 +238,53 @@
         </div>
 
         <!-- Bottom Section -->
-        <div class="p-4 border-t border-base-300">
-          <div class="card bg-base-100 shadow-sm">
-            <div class="card-body gap-2">
-              <h3 class="card-title text-sm">Account</h3>
-              <p class="text-xs text-base-content/70 break-words">
-                Signed in as <strong>{getAuthenticatedUser().user.email}</strong
-                >
-              </p>
-              <p class="text-xs text-base-content/70 break-words">
-                Display name: <strong
-                  >{getAuthenticatedUser().user.display_name ||
-                    `${getAuthenticatedUser().user.first_name} ${getAuthenticatedUser().user.last_name?.[0] || ""}`}</strong
-                >
-              </p>
-              <div class="mt-2 flex flex-col gap-2">
-                <UpdateUser user={getAuthenticatedUser().user} />
-                <button
-                  class="btn btn-outline btn-sm btn-block"
-                  onclick={signOut}>Sign out</button
-                >
-              </div>
-              <div class="mt-2">
-                <ThemeSwitcher />
-              </div>
+        <div class="p-4 border-t border-base-300" id="sidebar-settings">
+          <button
+            class="sidebar-settings-trigger"
+            onclick={() => {
+              settingsModal.openModal();
+            }}
+          >
+            <div class="sidebar-settings-copy">
+              <p class="sidebar-settings-name">Kia ora, {getGreetingName()}!</p>
+              <p class="sidebar-settings-email">{getAuthenticatedUser().user.email}</p>
             </div>
-          </div>
+            <span class="sidebar-settings-pill">Settings</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
+
+  <Modal bind:this={settingsModal} title="Settings">
+    <div class="space-y-4 py-4" id="settings-panel">
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-2">
+          <h3 class="card-title text-sm">Account</h3>
+          <p class="text-sm text-base-content/70 break-words">
+            Signed in as <strong>{getAuthenticatedUser().user.email}</strong>
+          </p>
+          <p class="text-sm text-base-content/70 break-words">
+            Display name: <strong>{getDisplayName()}</strong>
+          </p>
+          <div class="mt-2 flex flex-col gap-2">
+            <UpdateUser
+              user={getAuthenticatedUser().user}
+              buttonClass="btn btn-outline btn-block"
+            />
+            <button class="btn btn-outline btn-block" onclick={signOut}>Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body gap-2">
+          <h3 class="card-title text-sm">Theme</h3>
+          <ThemeSwitcher buttonClass="btn btn-outline m-0" />
+        </div>
+      </div>
+    </div>
+  </Modal>
 {:else}
   <!-- Login page or unauthenticated users without sidebar -->
   <div class="min-h-screen flex flex-col" id="landing">

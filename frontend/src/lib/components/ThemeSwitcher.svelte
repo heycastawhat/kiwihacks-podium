@@ -1,10 +1,15 @@
 <script lang="ts">
   import { themes } from "$lib/consts";
   import { setSystemTheme } from "$lib/misc";
+
+  let {
+    buttonClass = "btn m-1",
+    dropdownClass = "dropdown-top",
+  }: { buttonClass?: string; dropdownClass?: string } = $props();
 </script>
 
-<div class="dropdown dropdown-top" id="theme-switcher">
-  <div tabindex="0" role="button" class="btn m-1">
+<div class={`dropdown ${dropdownClass}`} id="theme-switcher">
+  <div tabindex="0" role="button" class={buttonClass}>
     Theme
     <svg
       width="12px"
