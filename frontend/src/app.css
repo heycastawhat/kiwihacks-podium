@@ -7,7 +7,6 @@
 @plugin "daisyui" {
   themes:
     kiwihacks,
-    kiwihacks-dark,
     catppuccin-latte,
     catppuccin-mocha;
 }
@@ -32,35 +31,6 @@
   --color-info-content: #132f1e;
   --color-success: #88bc82;
   --color-success-content: #102418;
-  --color-warning: #f1ca4d;
-  --color-warning-content: #2c2100;
-  --color-error: #b04747;
-  --color-error-content: #fff2f2;
-  --radius-selector: 0.9rem;
-  --radius-field: 0.9rem;
-  --radius-box: 1rem;
-}
-
-@plugin "daisyui/theme" {
-  name: "kiwihacks-dark";
-  default: false;
-  prefersdark: true;
-  --color-base-100: #1a1714;
-  --color-base-200: #14110f;
-  --color-base-300: #0f0c0a;
-  --color-base-content: #ebe6e3;
-  --color-primary: #298951;
-  --color-primary-content: #ebe6e3;
-  --color-secondary: #1e2e1c;
-  --color-secondary-content: #ebe6e3;
-  --color-accent: #298951;
-  --color-accent-content: #ebe6e3;
-  --color-neutral: #1e2e1c;
-  --color-neutral-content: #ebe6e3;
-  --color-info: #0d2a35;
-  --color-info-content: #ebe6e3;
-  --color-success: #298951;
-  --color-success-content: #ebe6e3;
   --color-warning: #f1ca4d;
   --color-warning-content: #2c2100;
   --color-error: #b04747;
