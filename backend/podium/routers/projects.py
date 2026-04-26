@@ -21,12 +21,20 @@ from podium.db.postgres import (
     scalar_one_or_none,
 )
 from podium.db.postgres.base import async_session_factory
+from podium.authz import has_admin_permission
 from podium.db.postgres.user import has_ysws_pii
 from podium.routers.auth import get_current_user
 from podium.limiter import limiter
 from podium.validators import itch, github, CUSTOM_VALIDATORS
 from podium.validators.base import ValidationResult
-from podium.constants import BAD_AUTH, BAD_ACCESS, RepoValidation, DemoValidation, ValidationStatus
+from podium.constants import (
+    BAD_AUTH,
+    BAD_ACCESS,
+    RepoValidation,
+    DemoValidation,
+    ValidationStatus,
+    PlatformAdminPermission,
+)
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -263,7 +271,11 @@ async def delete_project(
 ):
     """Delete a project."""
     project = await session.get(Project, project_id)
-    if not project or project.owner_id != user.id:
+    can_remove_any_project = has_admin_permission(
+        user,
+        PlatformAdminPermission.REMOVE_PROJECTS.value,
+    )
+    if not project or (project.owner_id != user.id and not can_remove_any_project):
         raise BAD_ACCESS
 
     await session.delete(project)

@@ -84,8 +84,16 @@
     const base = hasProject
       ? { "/": { label: "Home", icon: "home" }, "/projects": { label: "Projects", icon: "projects" }, "/events": { label: "Events", icon: "events" } }
       : { "/": { label: "Home", icon: "home" }, "/events": { label: "Events", icon: "events" } };
-    if (getAuthenticatedUser().user.is_superadmin) {
-      return { ...base, "/superadmin": { label: "Superadmin", icon: "create" } };
+    const currentUser = getAuthenticatedUser().user;
+    if (currentUser.is_superadmin) {
+      return {
+        ...base,
+        "/admin": { label: "Admin", icon: "create" },
+        "/superadmin": { label: "Superadmin", icon: "create" },
+      };
+    }
+    if (currentUser.is_admin) {
+      return { ...base, "/admin": { label: "Admin", icon: "create" } };
     }
     return base;
   });

@@ -224,6 +224,8 @@ export type UserPrivate = {
     vote_ids?: Array<(string)>;
     has_ysws_pii?: boolean;
     is_superadmin?: boolean;
+    is_admin?: boolean;
+    admin_permissions?: Array<string>;
 };
 
 /**
@@ -257,6 +259,8 @@ export type UserSummary = {
     email: string;
     display_name: string;
     is_superadmin: boolean;
+    is_admin: boolean;
+    admin_permissions_csv: string;
 };
 
 /**

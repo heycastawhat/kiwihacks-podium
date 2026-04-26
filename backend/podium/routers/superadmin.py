@@ -39,7 +39,8 @@ from podium.db.postgres import (
     scalar_one_or_none,
 )
 from podium.routers.auth import get_current_user
-from podium.constants import BAD_ACCESS, EventPhase
+from podium.constants import BAD_ACCESS, EventPhase, PlatformAdminPermission
+from podium.authz import normalize_permissions_csv, parse_permissions_csv
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
 
@@ -73,6 +74,26 @@ class UserSummary(BaseModel):
     email: str
     display_name: str
     is_superadmin: bool
+    is_admin: bool
+    admin_permissions_csv: str
+
+
+class UserAccessUpdate(BaseModel):
+    is_superadmin: bool | None = None
+    is_admin: bool | None = None
+    admin_permissions_csv: str | None = None
+
+
+def _validate_permissions_csv(value: str) -> str:
+    permissions = parse_permissions_csv(value)
+    valid_permissions = {permission.value for permission in PlatformAdminPermission}
+    invalid = sorted(p for p in permissions if p not in valid_permissions)
+    if invalid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid admin permission(s): {', '.join(invalid)}",
+        )
+    return normalize_permissions_csv(permissions)
 
 
 @router.get("/events")
@@ -166,12 +187,50 @@ async def list_users(
     return await paginate(session, select(User))
 
 
-@router.get("/projects/csv")
+@router.patch("/users/{user_id}/access")
+async def update_user_access(
+    user_id: Annotated[UUID, Path(title="User ID")],
+    update: UserAccessUpdate,
+    user: Annotated[User, Depends(require_superadmin)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> UserSummary:
+    """Grant/revoke admin and superadmin access for a user."""
+    target = await session.get(User, user_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    data = update.model_dump(exclude_unset=True)
+
+    if (
+        target.id == user.id
+        and "is_superadmin" in data
+        and data["is_superadmin"] is False
+    ):
+        raise HTTPException(status_code=400, detail="You cannot revoke your own superadmin access")
+
+    if "is_superadmin" in data:
+        target.is_superadmin = data["is_superadmin"]
+    if "is_admin" in data:
+        target.is_admin = data["is_admin"]
+    if "admin_permissions_csv" in data:
+        target.admin_permissions_csv = _validate_permissions_csv(data["admin_permissions_csv"] or "")
+
+    await session.commit()
+    await session.refresh(target)
+    return UserSummary.model_validate(target)
+
+
+@router.get("/events/{event_id}/projects/csv")
 async def export_projects_csv(
+    event_id: Annotated[UUID, Path(title="Event ID")],
     user: Annotated[User, Depends(require_superadmin)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Response:
-    """Export all projects as a CSV attachment for superadmin backups/analysis."""
+    """Export one event's projects as a CSV attachment for superadmin backups/analysis."""
+    event = await session.get(Event, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
     stmt = (
         select(Project)
         .options(
@@ -180,7 +239,8 @@ async def export_projects_csv(
             selectinload(Project.collaborators),
             selectinload(Project.votes),
         )
-        .order_by(Project.event_id, Project.name, Project.id)
+        .where(Project.event_id == event_id)
+        .order_by(Project.name, Project.id)
     )
     result = await session.exec(stmt)
     projects = result.all()
@@ -254,7 +314,7 @@ async def export_projects_csv(
         )
 
     timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-    filename = f"podium_projects_{timestamp}.csv"
+    filename = f"podium_projects_{event.slug}_{timestamp}.csv"
     return Response(
         content=output.getvalue(),
         media_type="text/csv; charset=utf-8",

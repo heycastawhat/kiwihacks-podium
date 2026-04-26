@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel, Relationship
 
+from podium.constants import DEFAULT_ADMIN_PERMISSIONS, PlatformAdminPermission
 from podium.db.postgres.links import EventAttendeeLink, ProjectCollaboratorLink
 
 if TYPE_CHECKING:
@@ -36,6 +37,9 @@ class User(SQLModel, table=True):
 
     # Elevated access — superadmins can manage all events and set validation config
     is_superadmin: bool = Field(default=False)
+    is_admin: bool = Field(default=False)
+    # Comma-separated platform admin permissions in addition to default admin permissions.
+    admin_permissions_csv: str = Field(default="", max_length=1000)
 
     # Sensitive PII — must only appear in UserInternal, never in client-facing schemas.
     # If you add a new field here, do NOT add it to UserPublic or UserPrivate.
@@ -99,6 +103,8 @@ class UserPrivate(UserPublic):
     vote_ids: list[UUID] = []
     has_ysws_pii: bool = False
     is_superadmin: bool = False
+    is_admin: bool = False
+    admin_permissions: list[str] = []
 
 
 class UserInternal(UserPrivate, _AddressFields):
@@ -119,6 +125,21 @@ def has_ysws_pii(user: "User") -> bool:
     return bool(user.street_1 and user.city and user.country and user.dob)
 
 
+def get_effective_admin_permissions(user: "User") -> set[str]:
+    """Compute effective platform-admin permissions for a user."""
+    if user.is_superadmin:
+        return {permission.value for permission in PlatformAdminPermission}
+    if not user.is_admin:
+        return set()
+
+    extra_permissions = {
+        part.strip()
+        for part in user.admin_permissions_csv.split(",")
+        if part.strip()
+    }
+    return set(DEFAULT_ADMIN_PERMISSIONS) | extra_permissions
+
+
 def user_to_private(user: "User") -> "UserPrivate":
     """Build UserPrivate from a User model, extracting vote IDs from the loaded relationship.
     Requires User.votes to be loaded (via selectinload or similar).
@@ -135,6 +156,8 @@ def user_to_private(user: "User") -> "UserPrivate":
         vote_ids=[v.id for v in user.votes],
         has_ysws_pii=has_ysws_pii(user),
         is_superadmin=user.is_superadmin,
+        is_admin=user.is_admin,
+        admin_permissions=sorted(get_effective_admin_permissions(user)),
     )
 
 

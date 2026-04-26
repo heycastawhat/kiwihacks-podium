@@ -6,7 +6,14 @@
   import type { EventPrivate } from "$lib/client/types.gen";
   import { toast } from "svelte-sonner";
 
-  type UserSummary = { id: string; email: string; display_name: string; is_superadmin: boolean };
+  type UserSummary = {
+    id: string;
+    email: string;
+    display_name: string;
+    is_superadmin: boolean;
+    is_admin: boolean;
+    admin_permissions_csv: string;
+  };
 
   const phases = ["draft", "submission", "voting", "closed"];
   const repoValidations = ["none", "github", "custom"];
@@ -36,7 +43,12 @@
   let editRequireYswsPii = $state(false);
   let editFeatureFlags = $state("");
   let saving = $state(false);
-  let exportingProjects = $state(false);
+  let exportingProjectsEventId = $state<string | null>(null);
+  let editingUser = $state<UserSummary | null>(null);
+  let editUserIsSuperadmin = $state(false);
+  let editUserIsAdmin = $state(false);
+  let editUserPermissionsCsv = $state("");
+  let savingUserAccess = $state(false);
 
   async function loadEvents(page = eventsPage.page) {
     const { data, error } = await client.get<Page<EventPrivate>, unknown>({
@@ -125,16 +137,16 @@
     await loadEvents();
   }
 
-  async function exportProjectsCsv() {
+  async function exportProjectsCsv(event: EventPrivate) {
     const token = getAuthenticatedUser().access_token;
     if (!token) {
       toast.error("You must be signed in to export");
       return;
     }
 
-    exportingProjects = true;
+    exportingProjectsEventId = event.id;
     try {
-      const response = await fetch(`${env.PUBLIC_API_URL}/superadmin/projects/csv`, {
+      const response = await fetch(`${env.PUBLIC_API_URL}/superadmin/events/${event.id}/projects/csv`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "hi",
@@ -150,7 +162,7 @@
       const match = disposition.match(/filename="?([^"]+)"?/i);
       const filename =
         match?.[1] ??
-        `podium_projects_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+        `podium_projects_${event.slug}_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -161,13 +173,53 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast.success("Projects CSV downloaded");
+      toast.success(`Projects CSV downloaded for ${event.name}`);
     } catch (err) {
       console.error("Failed to export projects CSV", err);
       toast.error("Failed to export projects CSV");
     } finally {
-      exportingProjects = false;
+      exportingProjectsEventId = null;
     }
+  }
+
+  function startUserAccessEdit(u: UserSummary) {
+    editingUser = u;
+    editUserIsSuperadmin = u.is_superadmin;
+    editUserIsAdmin = u.is_admin;
+    editUserPermissionsCsv = u.admin_permissions_csv ?? "";
+  }
+
+  async function saveUserAccess() {
+    if (!editingUser) return;
+
+    const body: Record<string, string | boolean> = {};
+    if (editUserIsSuperadmin !== editingUser.is_superadmin) body.is_superadmin = editUserIsSuperadmin;
+    if (editUserIsAdmin !== editingUser.is_admin) body.is_admin = editUserIsAdmin;
+    if ((editUserPermissionsCsv ?? "") !== (editingUser.admin_permissions_csv ?? "")) {
+      body.admin_permissions_csv = editUserPermissionsCsv;
+    }
+
+    if (Object.keys(body).length === 0) {
+      editingUser = null;
+      return;
+    }
+
+    savingUserAccess = true;
+    const { error } = await client.patch<UserSummary, unknown>({
+      url: `/superadmin/users/${editingUser.id}/access`,
+      body,
+      throwOnError: false,
+    });
+    savingUserAccess = false;
+
+    if (error) {
+      toast.error("Failed to update user access");
+      return;
+    }
+
+    toast.success("User access updated");
+    editingUser = null;
+    await loadUsers(usersPage.page);
   }
 
   onMount(load);
@@ -196,16 +248,7 @@
   <!-- Events Table -->
   <div class="card bg-base-100 shadow-lg">
     <div class="card-body">
-      <div class="flex items-center justify-between gap-2">
-        <h2 class="card-title">All Events</h2>
-        <button
-          class="btn btn-outline btn-sm"
-          onclick={exportProjectsCsv}
-          disabled={exportingProjects}
-        >
-          {exportingProjects ? "Exporting…" : "Export Projects CSV"}
-        </button>
-      </div>
+      <h2 class="card-title">All Events</h2>
       {#if loading}
         <span class="loading loading-spinner loading-md"></span>
       {:else if eventsPage.total === 0}
@@ -233,6 +276,13 @@
                   <td class="text-sm">{usersPage.items.find((u) => u.id === event.owner_id)?.email ?? event.owner_id}</td>
                   <td>{event.deleted_at ? new Date(event.deleted_at).toLocaleDateString() : "—"}</td>
                   <td class="flex gap-2">
+                    <button
+                      class="btn btn-outline btn-xs"
+                      onclick={() => exportProjectsCsv(event)}
+                      disabled={exportingProjectsEventId !== null}
+                    >
+                      {exportingProjectsEventId === event.id ? "Exporting…" : "Export CSV"}
+                    </button>
                     {#if !event.deleted_at}
                       <button class="btn btn-outline btn-xs" onclick={() => startEdit(event)}>Edit</button>
                       <button class="btn btn-error btn-xs" onclick={() => deleteEvent(event)}>Delete</button>
@@ -313,7 +363,7 @@
         <div class="overflow-x-auto">
           <table class="table table-zebra w-full">
             <thead>
-              <tr><th>Email</th><th>Display name</th><th>Superadmin</th><th>ID</th></tr>
+              <tr><th>Email</th><th>Display name</th><th>Superadmin</th><th>Admin</th><th>Admin perms</th><th>ID</th><th></th></tr>
             </thead>
             <tbody>
               {#each usersPage.items as u (u.id)}
@@ -321,8 +371,46 @@
                   <td>{u.email}</td>
                   <td>{u.display_name || "—"}</td>
                   <td>{u.is_superadmin ? "✓" : ""}</td>
+                  <td>{u.is_admin ? "✓" : ""}</td>
+                  <td class="font-mono text-xs">{u.admin_permissions_csv || "—"}</td>
                   <td class="font-mono text-xs text-base-content/50">{u.id}</td>
+                  <td>
+                    <button class="btn btn-outline btn-xs" onclick={() => startUserAccessEdit(u)}>
+                      Access
+                    </button>
+                  </td>
                 </tr>
+                {#if editingUser?.id === u.id}
+                  <tr>
+                    <td colspan="7">
+                      <div class="card bg-base-200 my-2">
+                        <div class="card-body gap-3 py-4">
+                          <h3 class="font-semibold">Access: {u.email}</h3>
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" class="checkbox checkbox-sm" bind:checked={editUserIsSuperadmin} />
+                              <span class="label-text">Superadmin</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" class="checkbox checkbox-sm" bind:checked={editUserIsAdmin} />
+                              <span class="label-text">Admin</span>
+                            </label>
+                            <label class="form-control sm:col-span-2">
+                              <span class="label-text mb-1">Admin permissions CSV (extra): create_events,edit_events,delete_events</span>
+                              <input class="input input-bordered input-sm font-mono" bind:value={editUserPermissionsCsv} />
+                            </label>
+                          </div>
+                          <div class="flex gap-2">
+                            <button class="btn btn-primary btn-sm" onclick={saveUserAccess} disabled={savingUserAccess}>
+                              {savingUserAccess ? "Saving…" : "Save Access"}
+                            </button>
+                            <button class="btn btn-ghost btn-sm" onclick={() => editingUser = null}>Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                {/if}
               {/each}
             </tbody>
           </table>

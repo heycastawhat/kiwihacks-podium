@@ -13,6 +13,8 @@ export const defaultUser: UserPrivate = {
   vote_ids: [],
   has_ysws_pii: false,
   is_superadmin: false,
+  is_admin: false,
+  admin_permissions: [],
 };
 
 export const defaultAuthenticatedUser: AuthenticatedUser = {

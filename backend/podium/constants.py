@@ -51,3 +51,23 @@ class ValidationStatus(str, Enum):
     PENDING = "pending"   # not yet checked
     VALID = "valid"       # all configured validators passed
     WARNING = "warning"   # at least one validator flagged an issue
+
+
+class PlatformAdminPermission(str, Enum):
+    """Permission keys for the global admin role."""
+
+    VIEW_ALL_EVENTS = "view_all_events"
+    EXPORT_PROJECTS_CSV = "export_projects_csv"
+    REMOVE_PROJECTS = "remove_projects"
+    CREATE_EVENTS = "create_events"
+    EDIT_EVENTS = "edit_events"
+    DELETE_EVENTS = "delete_events"
+
+
+DEFAULT_ADMIN_PERMISSIONS: frozenset[str] = frozenset(
+    {
+        PlatformAdminPermission.VIEW_ALL_EVENTS.value,
+        PlatformAdminPermission.EXPORT_PROJECTS_CSV.value,
+        PlatformAdminPermission.REMOVE_PROJECTS.value,
+    }
+)
