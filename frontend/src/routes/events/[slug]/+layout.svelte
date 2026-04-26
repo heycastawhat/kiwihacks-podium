@@ -15,10 +15,10 @@
   });
 </script>
 
-{#if eventHeroImage()}
+{#if eventHeroImage}
   <div class="flex justify-center pt-6 pb-2">
     <img
-      src={eventHeroImage()}
+      src={eventHeroImage}
       alt={data.event.name}
       class="h-28 object-contain"
     />
