@@ -83,7 +83,7 @@
         />
         <p class="mono text-lg text-base-content/80">
           {officialEvents[0]?.description ||
-            "Hackathon peer judging platform for submissions, voting, and leaderboards."}
+            "KiwiHacks Podium"}
         </p>
 
         <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-primary/30 rounded-2xl border border-base-300">

@@ -152,8 +152,7 @@
         </div>
         <div class="flex-1">
           <a href="/" class="flex items-center gap-2 btn btn-ghost px-2">
-            <img src="/favicon.svg" alt="Podium" class="w-6 h-6" />
-            <span class="text-xl font-extrabold">Podium</span>
+            <img src="https://kiwihacks.org/assets/kiwihackstext-494RwoFq.png" alt="KiwiHacks Podium" class="h-6 w-auto" />
           </a>
         </div>
       </div>
@@ -182,11 +181,10 @@
         <!-- Logo/Header -->
         <div class="p-6 border-b border-base-300" id="sidebar-top">
           <a href="/" class="flex items-center gap-2">
-            <img src="/favicon.svg" alt="Podium" class="w-8 h-8" />
-            <span class="text-2xl font-extrabold text-primary">Podium</span>
+            <img src="https://kiwihacks.org/assets/kiwihackstext-494RwoFq.png" alt="KiwiHacks Podium" class="h-8 w-auto" />
           </a>
           <p class="text-base-content/70 text-sm mt-1">
-            Hackathon peer judging platform
+            KiwiHacks Podium
           </p>
         </div>
 
@@ -261,8 +259,7 @@
       <div class="navbar-start"></div>
       <div class="navbar-center">
         <a href="/" class="flex items-center gap-2 btn btn-ghost px-2">
-          <img src="/favicon.svg" alt="Podium" class="w-7 h-7" />
-          <span class="text-xl font-extrabold">Podium</span>
+          <img src="https://kiwihacks.org/assets/kiwihackstext-494RwoFq.png" alt="KiwiHacks Podium" class="h-7 w-auto" />
         </a>
       </div>
       <div class="navbar-end gap-2">
