@@ -179,8 +179,8 @@ test.describe('API coverage — EVENTS router', () => {
 			name: unique('Covered Project', testInfo),
 			description: 'api-coverage test',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		const listResp = await getEventProjects(authedApi, event.id, false);
@@ -211,8 +211,8 @@ test.describe('API coverage — EVENTS router', () => {
 			name: unique('Own Project', testInfo),
 			description: 'cannot vote for this',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		// Attempt to self-vote → 403
@@ -246,8 +246,8 @@ test.describe('API coverage — PROJECTS router', () => {
 			name: unique('Mine Project', testInfo),
 			description: '',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		const mine = await getMyProjects(authedApi);
@@ -264,8 +264,8 @@ test.describe('API coverage — PROJECTS router', () => {
 			name: unique('GetProj P', testInfo),
 			description: '',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		// Public endpoint — anonymous client works
@@ -283,8 +283,8 @@ test.describe('API coverage — PROJECTS router', () => {
 			name: unique('Mutate P', testInfo),
 			description: 'orig',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		// Update
@@ -326,8 +326,8 @@ test.describe('API coverage — PROJECTS router', () => {
 			name: unique('Join P', testInfo),
 			description: '',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		const tag = `join-${Date.now()}-w${testInfo.workerIndex}`;
@@ -363,8 +363,8 @@ test.describe('API coverage — PROJECTS router', () => {
 			name: unique('ToValidate', testInfo),
 			description: '',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		// Validate queues background work and returns a 200 with valid=true
@@ -477,8 +477,8 @@ test.describe('API coverage — ADMIN router', () => {
 			name: unique('LB P', testInfo),
 			description: '',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 		const resp = await adminGetLeaderboard(authedApi, event.id);
 		expect(resp.ok()).toBe(true);
@@ -496,8 +496,8 @@ test.describe('API coverage — ADMIN router', () => {
 			name: unique('Vote Target', testInfo),
 			description: '',
 			event_id: event.id,
-			repo: 'https://github.com/hackclub/podium',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 		});
 
 		const tag = `voter-${Date.now()}-w${testInfo.workerIndex}`;
@@ -555,8 +555,8 @@ test.describe('API coverage — EVENT PHASE lifecycle', () => {
 				name: unique('Lifecycle P', testInfo),
 				description: '',
 				event_id: event.id,
-				repo: 'https://github.com/hackclub/podium',
-				image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md'
+				repo: 'https://github.com/heycastawhat/kiwihacks-podium',
+				image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md'
 			});
 			// Flip the event to SUBMISSION — voting should now be closed.
 			const submissionResp = await adminPatchEvent(authedApi, event.id, { phase: 'submission' });

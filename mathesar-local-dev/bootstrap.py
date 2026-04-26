@@ -8,7 +8,7 @@ Always ensures database connection is configured and SQL is upgraded.
 Environment variables:
     MATHESAR_ADMIN_USERNAME - Admin username (default: admin)
     MATHESAR_ADMIN_PASSWORD - Admin password (required)
-    MATHESAR_ADMIN_EMAIL    - Admin email (default: admin@podium.hackclub.com)
+    MATHESAR_ADMIN_EMAIL    - Admin email (default: admin@kiwihacks.org)
     PODIUM_DATABASE_URL     - Podium postgres URL (required)
 """
 
@@ -42,7 +42,7 @@ def main():
 
     admin_username = get_env("MATHESAR_ADMIN_USERNAME", "admin")
     admin_password = get_env("MATHESAR_ADMIN_PASSWORD")
-    admin_email = get_env("MATHESAR_ADMIN_EMAIL", "admin@podium.hackclub.com")
+    admin_email = get_env("MATHESAR_ADMIN_EMAIL", "admin@kiwihacks.org")
 
     # Parse Podium database URL
     podium_url = get_env("PODIUM_DATABASE_URL")

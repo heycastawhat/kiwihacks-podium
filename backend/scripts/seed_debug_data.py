@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 """
 Seed script for creating debug/test data.
 
 Creates:
-- A flagship event with angad+debug@hackclub.com as owner
-- A second user angad+debug2@hackclub.com attending the event
+- A flagship event with owner+debug@kiwihacks.org as owner
+- A second user attendee+debug@kiwihacks.org attending the event
 - A valid project submitted by the second user
 
 Usage:
@@ -166,7 +167,7 @@ async def create_project(session, owner: User, event: Event) -> Project:
     project = Project(
         name="Pixel Dash",
         repo="https://github.com/yourname/gamename",
-        image_url="https://hackclub.com/stickers/logo.png",
+        image_url="https://vote.kiwihacks.org/podium.png",
         demo="https://vempr.itch.io/pixeldash",
         description="A fast-paced pixel art platformer game where you dash through challenging levels. Built during the flagship hackathon!",
         join_code=token_urlsafe(8),
@@ -196,8 +197,8 @@ async def main():
         # Create or get owner user
         owner = await get_or_create_user(
             session,
-            email="angad+debug@hackclub.com",
-            first_name="Angad",
+            email="owner+debug@kiwihacks.org",
+            first_name="Owner",
             last_name="Debug"
         )
         
@@ -207,8 +208,8 @@ async def main():
         # Create or get second user
         attendee = await get_or_create_user(
             session,
-            email="angad+debug2@hackclub.com",
-            first_name="Angad",
+            email="attendee+debug@kiwihacks.org",
+            first_name="Attendee",
             last_name="Debug2"
         )
         

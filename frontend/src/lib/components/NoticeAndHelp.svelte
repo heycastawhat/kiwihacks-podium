@@ -70,8 +70,8 @@
 <!-- Help Modal -->
 <Modal bind:this={helpModal} title="About Podium">
   <p class="py-4">
-    Podium is Kiwihacks's peer-judging platform for hackathons, based on
-    Hack Club's podium.
+    Podium is Kiwihacks's peer-judging platform for hackathons, based on the
+    open-source Podium project.
   </p>
   <p class="py-2">
     <strong>Urgent Help:</strong> If Podium is not working and you need

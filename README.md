@@ -1,11 +1,11 @@
-# [Podium](https://podium.hackclub.com/)
+# [Kiwihacks Podium](https://vote.kiwihacks.org/)
 
-Peer-judging platform for Hack Club hackathons.
+Peer-judging platform for Kiwihacks hackathons.
 
 ## How It Works
 
 1. **Sign in** — Magic link authentication
-2. **Select your event** — Choose from official Hack Club hackathons
+2. **Select your event** — Choose from official Kiwihacks events
 3. **Submit your project** — Add name, repo, demo URL
 4. **Get validated** — itch.io demos checked for browser playability
 5. **Vote** — Browse other projects and vote for your favorites
@@ -30,4 +30,4 @@ cd backend && doppler run --config dev -- uv run podium
 cd frontend && bun dev
 ```
 
-See [docs/local-dev.md](docs/local-dev.md) for full setup.
+See [docs/local-dev.md](docs/local-dev.md) for full setup and [docs/kiwihacks-ops.md](docs/kiwihacks-ops.md) for deployment/runbook notes.

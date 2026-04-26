@@ -321,20 +321,20 @@ export type VerifyTokenVerifyGetResponse = (AuthenticatedUser);
 
 export type VerifyTokenVerifyGetError = (HTTPValidationError);
 
-export type HackclubLoginAuthHackclubGetResponse = (unknown);
+export type SsoLoginAuthSsoGetResponse = (unknown);
 
-export type HackclubLoginAuthHackclubGetError = unknown;
+export type SsoLoginAuthSsoGetError = unknown;
 
-export type HackclubCallbackAuthHackclubCallbackGetData = {
+export type SsoCallbackAuthSsoCallbackGetData = {
     query: {
         code: string;
         state: string;
     };
 };
 
-export type HackclubCallbackAuthHackclubCallbackGetResponse = (unknown);
+export type SsoCallbackAuthSsoCallbackGetResponse = (unknown);
 
-export type HackclubCallbackAuthHackclubCallbackGetError = (HTTPValidationError);
+export type SsoCallbackAuthSsoCallbackGetError = (HTTPValidationError);
 
 export type ListOfficialEventsEventsOfficialGetResponse = (Array<EventPublic>);
 

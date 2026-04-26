@@ -1,6 +1,6 @@
 # Architecture
 
-Podium is a peer-judging platform for Hack Club hackathons. Attendees select an official event, submit projects, and vote.
+Podium is a peer-judging platform for Kiwihacks hackathons. Attendees select an official event, submit projects, and vote.
 
 ## Stack
 

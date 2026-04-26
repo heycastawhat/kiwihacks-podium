@@ -208,14 +208,14 @@
       <p class="mt-2">Verifying your magic link...</p>
     </div>
   {:else}
-    {#if env.PUBLIC_HACKCLUB_CLIENT_ID}
+    {#if env.PUBLIC_SSO_CLIENT_ID}
       <a
-        href="{env.PUBLIC_API_URL}/auth/hackclub"
+        href="{env.PUBLIC_API_URL}/auth/sso"
         class="btn w-full mb-1 gap-2"
         style="background-color: #ec3750; color: white; border-color: #ec3750;"
       >
-        <img src="https://assets.hackclub.com/icon-rounded.svg" alt="Hack Club" class="w-5 h-5" />
-        Login with Hack Club
+        <img src="/favicon.svg" alt="SSO" class="w-5 h-5" />
+        Login with SSO
       </a>
       <div class="divider my-2">or use email</div>
     {/if}
@@ -350,7 +350,7 @@
 
         <label class="label flex justify-between" for="dob">
           <span>Date of Birth</span>
-          <span>Hack Club is only for students {"<="}18</span>
+          <span>This event is only for students {"<="}18</span>
         </label>
         <input
           id="dob"

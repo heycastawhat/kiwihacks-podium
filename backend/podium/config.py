@@ -98,13 +98,25 @@ settings.validators.register(
             "database_url_ro",
             default="",
         ),
-        # Hack Club OAuth — empty client_id disables the HC login option entirely
+        # OAuth SSO — empty client_id disables the SSO login option entirely
         Validator(
-            "hackclub_client_id",
+            "sso_client_id",
             default="",
         ),
         Validator(
-            "hackclub_client_secret",
+            "sso_client_secret",
+            default="",
+        ),
+        Validator(
+            "oauth_authorize_url",
+            default="",
+        ),
+        Validator(
+            "oauth_token_url",
+            default="",
+        ),
+        Validator(
+            "oauth_me_url",
             default="",
         ),
     ],

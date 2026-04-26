@@ -97,8 +97,8 @@ test.describe('Admin Panel', () => {
 		await createProject(authedApi, {
 			name: 'Badge Test Project',
 			description: 'Validation badge test',
-			image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md',
-			repo: 'https://github.com/hackclub/podium',
+			image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md',
+			repo: 'https://github.com/heycastawhat/kiwihacks-podium',
 			event_id: event.id,
 		});
 

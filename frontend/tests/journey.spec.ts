@@ -136,8 +136,8 @@ test.describe('Full User Journey', () => {
 		await expect(organizerPage.locator('#project_name')).toBeVisible({ timeout: 10000 });
 		await organizerPage.locator('#project_name').fill(`Project Alpha ${timestamp}`);
 		await organizerPage.locator('#project_description').fill('First test project');
-		await organizerPage.locator('#image_url').fill('https://raw.githubusercontent.com/hackclub/podium/main/README.md');
-		await organizerPage.locator('#repo_url').fill('https://github.com/hackclub/podium');
+		await organizerPage.locator('#image_url').fill('https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md');
+		await organizerPage.locator('#repo_url').fill('https://github.com/heycastawhat/kiwihacks-podium');
 		// Add a real playable itch.io game to test successful validation
 		await organizerPage.locator('#demo_url').fill('https://qrosp-games-oy.itch.io/deathleap');
 
@@ -159,8 +159,8 @@ test.describe('Full User Journey', () => {
 			data: {
 				name: `Project Beta ${timestamp}`,
 				description: 'Second test project',
-				image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md',
-				repo: 'https://github.com/hackclub/podium',
+				image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md',
+				repo: 'https://github.com/heycastawhat/kiwihacks-podium',
 				demo: 'https://qrosp-games-oy.itch.io/deathleap',
 				event_id: eventId,
 				hours_spent: 0
@@ -209,8 +209,8 @@ test.describe('Full User Journey', () => {
 		await expect(attendeePage.locator('#project_name')).toBeVisible({ timeout: 10000 });
 		await attendeePage.locator('#project_name').fill(`Attendee Project ${timestamp}`);
 		await attendeePage.locator('#project_description').fill('Attendee test project');
-		await attendeePage.locator('#image_url').fill('https://raw.githubusercontent.com/hackclub/podium/main/README.md');
-		await attendeePage.locator('#repo_url').fill('https://github.com/hackclub/podium');
+		await attendeePage.locator('#image_url').fill('https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md');
+		await attendeePage.locator('#repo_url').fill('https://github.com/heycastawhat/kiwihacks-podium');
 		// Add the real playable itch.io game to test validation
 		await attendeePage.locator('#demo_url').fill('https://qrosp-games-oy.itch.io/deathleap');
 
@@ -365,8 +365,8 @@ test.describe('Full User Journey', () => {
 			data: {
 				name: `Organizer Test Project 1 ${timestamp}`,
 				description: 'First project',
-				image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md',
-				repo: 'https://github.com/hackclub/podium',
+				image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md',
+				repo: 'https://github.com/heycastawhat/kiwihacks-podium',
 				demo: 'https://qrosp-games-oy.itch.io/deathleap',
 				event_id: eventId,
 				hours_spent: 0
@@ -378,8 +378,8 @@ test.describe('Full User Journey', () => {
 			data: {
 				name: `Organizer Test Project 2 ${timestamp}`,
 				description: 'Second project',
-				image_url: 'https://raw.githubusercontent.com/hackclub/podium/main/README.md',
-				repo: 'https://github.com/hackclub/podium',
+				image_url: 'https://raw.githubusercontent.com/heycastawhat/kiwihacks-podium/main/README.md',
+				repo: 'https://github.com/heycastawhat/kiwihacks-podium',
 				demo: 'https://qrosp-games-oy.itch.io/deathleap',
 				event_id: eventId,
 				hours_spent: 0

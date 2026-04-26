@@ -11,7 +11,7 @@ export const load = () => {
       {
         name: "description",
         content:
-          "Podium - Hack Club's open-source peer-judging platform for hackathons",
+          "Podium - Kiwihacks peer-judging platform for hackathons",
       },
     ],
   };

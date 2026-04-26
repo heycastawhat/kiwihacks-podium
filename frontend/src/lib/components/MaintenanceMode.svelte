@@ -14,7 +14,7 @@
       We're currently performing scheduled maintenance. Please check back soon!
     </p>
     <p class="text-base-content/50 text-sm mt-4">
-      Questions? Email <a href="mailto:podium@hackclub.com" class="link link-primary">podium@hackclub.com</a>
+      Questions? Ask an organiser for help.
     </p>
   </div>
 </div>

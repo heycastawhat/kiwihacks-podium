@@ -2,7 +2,6 @@
   let { children, data } = $props();
 
   const eventHeroImages: Record<string, string> = {
-    sleepover: "https://wsrv.nl/?url=sleepover.hackclub.com/background/sleepover_logo.PNG&output=webp&h=288&fit=contain",
     kiwihacks: "/assets/kiwihacks/kiwi-text.png",
   };
 
