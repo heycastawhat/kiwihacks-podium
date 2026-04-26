@@ -32,6 +32,7 @@
   let editDemoValidation = $state("");
   let editCustomValidator = $state("");
   let editRequireYswsPii = $state(false);
+  let editFeatureFlags = $state("");
   let saving = $state(false);
 
   async function loadEvents(page = eventsPage.page) {
@@ -80,6 +81,7 @@
     editDemoValidation = event.demo_validation;
     editCustomValidator = event.custom_validator ?? "";
     editRequireYswsPii = event.require_ysws_pii;
+    editFeatureFlags = event.feature_flags_csv ?? "";
   }
 
   async function saveEdit() {
@@ -93,6 +95,7 @@
     const newCustom = editCustomValidator.trim() || null;
     if (newCustom !== (editing.custom_validator ?? null)) body.custom_validator = newCustom;
     if (editRequireYswsPii !== editing.require_ysws_pii) body.require_ysws_pii = editRequireYswsPii;
+    if (editFeatureFlags !== (editing.feature_flags_csv ?? "")) body.feature_flags_csv = editFeatureFlags;
 
     if (Object.keys(body).length > 0) {
       const { error } = await client.patch<EventPrivate, unknown>({
@@ -154,7 +157,7 @@
         <div class="overflow-x-auto">
           <table class="table table-zebra w-full">
             <thead>
-              <tr><th>Name</th><th>Phase</th><th>Repo</th><th>Demo</th><th>Owner</th><th>Deleted</th><th></th></tr>
+              <tr><th>Name</th><th>Phase</th><th>Repo</th><th>Demo</th><th>Flags</th><th>Owner</th><th>Deleted</th><th></th></tr>
             </thead>
             <tbody>
               {#each eventsPage.items as event (event.id)}
@@ -169,6 +172,7 @@
                   <td><span class="badge {phaseBadge[event.phase] ?? 'badge-ghost'}">{event.phase}</span></td>
                   <td class="font-mono text-sm">{event.repo_validation}</td>
                   <td class="font-mono text-sm">{event.demo_validation}</td>
+                  <td class="font-mono text-xs">{event.feature_flags_csv || "—"}</td>
                   <td class="text-sm">{usersPage.items.find((u) => u.id === event.owner_id)?.email ?? event.owner_id}</td>
                   <td>{event.deleted_at ? new Date(event.deleted_at).toLocaleDateString() : "—"}</td>
                   <td class="flex gap-2">
@@ -180,7 +184,7 @@
                 </tr>
                 {#if editing?.id === event.id}
                   <tr>
-                    <td colspan="7">
+                    <td colspan="8">
                       <div class="card bg-base-200 my-2">
                         <div class="card-body gap-3 py-4">
                           <h3 class="font-semibold">Edit: {editing.name}</h3>
@@ -204,6 +208,10 @@
                             <label class="form-control">
                               <span class="label-text mb-1">Custom validator key</span>
                               <input class="input input-bordered input-sm font-mono" placeholder="(none)" bind:value={editCustomValidator} />
+                            </label>
+                            <label class="form-control">
+                              <span class="label-text mb-1">Feature Flags CSV (e.g. 'flagship')</span>
+                              <input class="input input-bordered input-sm font-mono" placeholder="(none)" bind:value={editFeatureFlags} />
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
                               <input type="checkbox" class="checkbox checkbox-sm" bind:checked={editRequireYswsPii} />
