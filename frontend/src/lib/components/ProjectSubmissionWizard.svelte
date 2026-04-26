@@ -353,9 +353,10 @@
   </div>
 {/snippet}
 
-<div class="max-w-md w-full mx-auto">
-  <div class="card bg-base-100 shadow-lg">
-    <div class="card-body">
+<div class="w-full px-3 sm:px-4">
+  <div class="max-w-lg w-full mx-auto">
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body p-5 sm:p-7 md:p-8">
       {#if currentStep === "chooseProject"}
         <!-- Choose Project Action Step -->
         <div class="text-center py-8">
@@ -524,6 +525,7 @@
         <!-- Final Success State (no validation) -->
         {@render successScreen()}
       {/if}
+      </div>
     </div>
   </div>
 </div>
