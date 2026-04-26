@@ -1,14 +1,13 @@
 <script lang="ts">
-  import ProjectCard from "./ProjectCard.svelte";
   import UpdateProjectModal from "./UpdateProjectModal.svelte";
   import Modal from "./Modal.svelte";
-  import type { ProjectPrivate, EventPrivate } from "$lib/client/types.gen";
+  import type { EventPrivate, EventPublic, ProjectPrivate } from "$lib/client/types.gen";
   import { validateProject } from "$lib/validation";
   import { customInvalidateAll } from "$lib/misc";
 
   interface Props {
     project: ProjectPrivate;
-    events: EventPrivate[];
+    events: Array<EventPrivate | EventPublic>;
   }
 
   let { project, events }: Props = $props();
@@ -16,99 +15,160 @@
   let editModal = $state<Modal>();
   let validationModal = $state<Modal>();
   let revalidating = $state(false);
+  let imageReady = $state(false);
+  let imageFailed = $state(false);
+
+  const eventForProject = $derived(
+    events.find((event) => event.id === project.event_id)
+  );
+
+  const credits = $derived.by(() => {
+    const allNames = [
+      project.owner_display_name,
+      ...(project.collaborator_display_names ?? []),
+    ].filter((name): name is string => Boolean(name));
+
+    if (allNames.length === 0) return "Unknown contributors";
+
+    const formatter = new Intl.ListFormat("en", {
+      style: "short",
+      type: "conjunction",
+    });
+    return formatter.format(allNames);
+  });
+
+  const statusBadge = $derived(
+    project.validation_status === "valid"
+      ? { cls: "badge-success", label: "Valid", icon: "✅" }
+      : project.validation_status === "warning"
+        ? { cls: "badge-warning", label: "Warning", icon: "⚠️" }
+        : { cls: "badge-neutral", label: "Pending", icon: "⏳" }
+  );
 
   async function triggerRevalidation() {
     revalidating = true;
     try {
       await validateProject(project.id);
-      // Give the background task a moment then refresh project data
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       await customInvalidateAll();
     } finally {
       revalidating = false;
     }
   }
-
-  const statusBadge = $derived(
-    project.validation_status === "valid"
-      ? { cls: "badge-success", label: "✅ Valid" }
-      : project.validation_status === "warning"
-        ? { cls: "badge-warning", label: "⚠️ Warning" }
-        : { cls: "badge-neutral", label: "Pending" }
-  );
 </script>
 
-<div class="m-4 min-w-0 @container">
-  <div class="card card-sm bg-base-100 rounded border-1 shadow-sm">
-    <!-- Header with metadata -->
-    <div class="card-body pb-2">
-      <!-- Event name at the top -->
-      <div class="text-center mb-3">
-        <span class="text-xs text-base-content/70 mb-1 block">Event</span>
-        {#each events as event}
-          {#if event.id === project.event_id}
-            <a
-              href={`/events/${event.slug}`}
-              class="link link-primary text-sm font-medium"
-              data-sveltekit-noscroll
-            >
-              {event.name}
-            </a>
-          {/if}
-        {/each}
-      </div>
-
-      <!-- Narrow: stacked/wrapped.  Wide (@xs+): Status | Join Code (centered) | Edit on one row. -->
-      <div class="flex flex-wrap justify-evenly items-start gap-x-3 gap-y-2 text-sm @xs:grid @xs:grid-cols-[auto_minmax(0,1fr)_auto]">
-        <!-- Validation Status -->
-        <div class="flex flex-col items-center">
-          <span class="text-xs text-base-content/70 mb-1">Status</span>
-          {#if revalidating}
-            <span class="badge badge-sm badge-neutral">
-              <span class="loading loading-dots loading-xs"></span>
-            </span>
-          {:else}
-            <button
-              class="badge badge-sm underline cursor-pointer whitespace-nowrap {statusBadge.cls}"
-              onclick={() => validationModal?.openModal()}
-            >
-              {statusBadge.label}
-            </button>
-          {/if}
-        </div>
-
-        <!-- Join Code (center) -->
-        <div class="flex flex-col items-center justify-self-center">
-          <span class="text-xs text-base-content/70 mb-1">Join Code</span>
-          <span class="badge badge-accent badge-sm font-mono max-w-full">
-            {project.join_code}
-          </span>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex flex-col items-center">
-          <span class="text-xs text-base-content/70 mb-1">Actions</span>
-          <button
-            class="badge badge-sm badge-secondary underline cursor-pointer"
-            onclick={() => editModal?.openModal()}
-          >
-            Edit
-          </button>
-        </div>
-      </div>
-
-      <div class="divider my-1"></div>
+<div class="h-full rounded-[28px] border-2 border-dashed border-base-content/35 bg-base-100/85 p-4 shadow-sm">
+  <div class="space-y-3">
+    <div class="text-center">
+      <p class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Event</p>
+      {#if eventForProject}
+        <a
+          href={`/events/${eventForProject.slug}`}
+          class="link link-hover text-base font-semibold text-base-content"
+          data-sveltekit-noscroll
+        >
+          {eventForProject.name}
+        </a>
+      {:else}
+        <p class="text-sm text-base-content/60">Unknown event</p>
+      {/if}
     </div>
 
-    <!-- Remove the outer margin from ProjectCard since we're handling it here -->
-    <div class="card-body pt-0 pb-4">
-      <div class="-m-4 -mt-2">
-        <ProjectCard
-          {project}
-          isSelected={false}
-          toggle={() => {}}
-          selectable={false}
-        />
+    <div class="grid grid-cols-3 gap-2 rounded-2xl border border-base-content/20 bg-base-100/70 p-2 text-center">
+      <div>
+        <p class="text-[10px] uppercase tracking-wide text-base-content/55">Status</p>
+        {#if revalidating}
+          <span class="badge badge-sm badge-neutral mt-1">
+            <span class="loading loading-dots loading-xs"></span>
+          </span>
+        {:else}
+          <button
+            class={`badge badge-sm mt-1 border border-base-content/20 ${statusBadge.cls}`}
+            onclick={() => validationModal?.openModal()}
+          >
+            {statusBadge.icon} {statusBadge.label}
+          </button>
+        {/if}
+      </div>
+
+      <div>
+        <p class="text-[10px] uppercase tracking-wide text-base-content/55">Join Code</p>
+        <span class="badge badge-sm badge-outline mt-1 font-mono">{project.join_code}</span>
+      </div>
+
+      <div>
+        <p class="text-[10px] uppercase tracking-wide text-base-content/55">Actions</p>
+        <button
+          class="btn btn-xs btn-outline mt-1"
+          onclick={() => editModal?.openModal()}
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+
+    <div class="rounded-[22px] border-2 border-dashed border-base-content/35 p-3">
+      <p class="text-center text-xs font-semibold uppercase tracking-wide text-base-content/55">Project</p>
+
+      <div class="mt-2 overflow-hidden rounded-xl border border-base-content/15 bg-base-200/40">
+        {#if project.image_url}
+          <img
+            src={project.image_url}
+            alt={project.name}
+            class="aspect-[3/2] w-full object-cover"
+            loading="lazy"
+            onload={() => (imageReady = true)}
+            onerror={() => {
+              imageReady = true;
+              imageFailed = true;
+            }}
+            style={`opacity: ${imageReady && !imageFailed ? 1 : 0}; transition: opacity 180ms ease;`}
+          />
+        {/if}
+
+        {#if project.image_url && !imageReady}
+          <div class="skeleton aspect-[3/2] w-full"></div>
+        {:else if !project.image_url || imageFailed}
+          <div class="flex aspect-[3/2] items-center justify-center text-sm text-base-content/50">
+            No image
+          </div>
+        {/if}
+      </div>
+
+      <div class="mt-3 border-t border-base-content/20 pt-3 text-center">
+        <h3 class="text-lg font-semibold leading-tight text-base-content">{project.name}</h3>
+        <p class="mt-2 line-clamp-2 text-sm text-base-content/75">
+          {project.description || "No description yet."}
+        </p>
+        <p class="mt-2 text-xs text-base-content/60">{credits}</p>
+      </div>
+
+      <div class="mt-4 grid grid-cols-3 gap-2">
+        <a
+          href={project.repo}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-sm btn-info"
+        >
+          Repo
+        </a>
+
+        {#if project.demo}
+          <a
+            href={project.demo}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-sm btn-success"
+          >
+            Demo
+          </a>
+        {:else}
+          <span class="btn btn-sm btn-disabled">Demo</span>
+        {/if}
+
+        <button class="btn btn-sm btn-outline" onclick={() => editModal?.openModal()}>
+          Edit
+        </button>
       </div>
     </div>
   </div>
@@ -129,7 +189,7 @@
       <p class="text-sm text-base-content/70">{project.validation_message}</p>
     {/if}
     <p class="text-xs text-base-content/50">
-      Validation warnings are informational — your project is never blocked.
+      Validation warnings are informational - your project is never blocked.
     </p>
     <button
       class="btn btn-sm btn-outline"

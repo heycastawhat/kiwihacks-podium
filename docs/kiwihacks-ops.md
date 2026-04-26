@@ -6,7 +6,7 @@ This file is the fast handoff for maintainers and future agents.
 
 - Frontend: Vercel project `kiwihacks-podium` (root dir: `frontend/`)
 - Backend: Nest host (SSH user `jpalmer`), repo path `/root/podium`
-- Public app URL: `https://kiwihacks-podium.vercel.app`
+- Public app URL: `https://vote.kiwihacks.org`
 
 ## Required Backend Env Vars
 
