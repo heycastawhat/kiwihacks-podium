@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { SuperadminService, client } from "$lib/client/sdk.gen";
+  import { getAuthenticatedUser } from "$lib/user.svelte";
+  import { env } from "$env/dynamic/public";
   import type { EventPrivate } from "$lib/client/types.gen";
   import { toast } from "svelte-sonner";
 
@@ -34,6 +36,7 @@
   let editRequireYswsPii = $state(false);
   let editFeatureFlags = $state("");
   let saving = $state(false);
+  let exportingProjects = $state(false);
 
   async function loadEvents(page = eventsPage.page) {
     const { data, error } = await client.get<Page<EventPrivate>, unknown>({
@@ -122,6 +125,51 @@
     await loadEvents();
   }
 
+  async function exportProjectsCsv() {
+    const token = getAuthenticatedUser().access_token;
+    if (!token) {
+      toast.error("You must be signed in to export");
+      return;
+    }
+
+    exportingProjects = true;
+    try {
+      const response = await fetch(`${env.PUBLIC_API_URL}/superadmin/projects/csv`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "hi",
+        },
+      });
+
+      if (!response.ok) {
+        toast.error("Failed to export projects CSV");
+        return;
+      }
+
+      const disposition = response.headers.get("content-disposition") ?? "";
+      const match = disposition.match(/filename="?([^"]+)"?/i);
+      const filename =
+        match?.[1] ??
+        `podium_projects_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Projects CSV downloaded");
+    } catch (err) {
+      console.error("Failed to export projects CSV", err);
+      toast.error("Failed to export projects CSV");
+    } finally {
+      exportingProjects = false;
+    }
+  }
+
   onMount(load);
 </script>
 
@@ -148,7 +196,16 @@
   <!-- Events Table -->
   <div class="card bg-base-100 shadow-lg">
     <div class="card-body">
-      <h2 class="card-title">All Events</h2>
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="card-title">All Events</h2>
+        <button
+          class="btn btn-outline btn-sm"
+          onclick={exportProjectsCsv}
+          disabled={exportingProjects}
+        >
+          {exportingProjects ? "Exporting…" : "Export Projects CSV"}
+        </button>
+      </div>
       {#if loading}
         <span class="loading loading-spinner loading-md"></span>
       {:else if eventsPage.total === 0}

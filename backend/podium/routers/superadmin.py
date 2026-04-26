@@ -12,11 +12,13 @@ Regular admin endpoints (admin.py) already grant superadmins full owner access
 to any event via the get_owned_event helper.
 """
 
+import csv
 from datetime import datetime, UTC
+from io import StringIO
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Response
 from pydantic import ConfigDict
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -30,6 +32,7 @@ from sqlalchemy.orm import selectinload
 from podium.db.postgres import (
     User,
     Event,
+    Project,
     EventPrivate,
     EventUpdate,
     get_session,
@@ -161,3 +164,99 @@ async def list_users(
 ) -> Page[UserSummary]:
     """List all users."""
     return await paginate(session, select(User))
+
+
+@router.get("/projects/csv")
+async def export_projects_csv(
+    user: Annotated[User, Depends(require_superadmin)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> Response:
+    """Export all projects as a CSV attachment for superadmin backups/analysis."""
+    stmt = (
+        select(Project)
+        .options(
+            selectinload(Project.owner),
+            selectinload(Project.event),
+            selectinload(Project.collaborators),
+            selectinload(Project.votes),
+        )
+        .order_by(Project.event_id, Project.name, Project.id)
+    )
+    result = await session.exec(stmt)
+    projects = result.all()
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "project_id",
+            "project_name",
+            "event_id",
+            "event_name",
+            "event_slug",
+            "event_phase",
+            "event_deleted_at",
+            "owner_id",
+            "owner_email",
+            "owner_display_name",
+            "collaborator_count",
+            "collaborator_emails",
+            "collaborator_display_names",
+            "repo",
+            "demo",
+            "image_url",
+            "description",
+            "hours_spent",
+            "join_code",
+            "validation_status",
+            "validation_message",
+            "points",
+            "vote_count",
+        ]
+    )
+
+    for project in projects:
+        collaborators = project.collaborators or []
+        collaborator_emails = ";".join(
+            c.email for c in collaborators if c and c.email
+        )
+        collaborator_names = ";".join(
+            c.display_name for c in collaborators if c and c.display_name
+        )
+        writer.writerow(
+            [
+                str(project.id),
+                project.name,
+                str(project.event_id),
+                project.event.name if project.event else "",
+                project.event.slug if project.event else "",
+                project.event.phase if project.event else "",
+                project.event.deleted_at.isoformat()
+                if project.event and project.event.deleted_at
+                else "",
+                str(project.owner_id),
+                project.owner.email if project.owner else "",
+                project.owner.display_name if project.owner else "",
+                len(collaborators),
+                collaborator_emails,
+                collaborator_names,
+                project.repo,
+                project.demo,
+                project.image_url,
+                project.description,
+                project.hours_spent,
+                project.join_code,
+                project.validation_status,
+                project.validation_message,
+                project.points,
+                len(project.votes or []),
+            ]
+        )
+
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+    filename = f"podium_projects_{timestamp}.csv"
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
