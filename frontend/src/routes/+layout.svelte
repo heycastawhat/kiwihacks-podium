@@ -17,7 +17,6 @@
   import AirtableHitsCounter from "$lib/components/AirtableHitsCounter.svelte";
   import DevModeIndicator from "$lib/components/DevModeIndicator.svelte";
   import { resetAirtableHits } from "$lib/airtable-hits.svelte";
-  import { getHasProject } from "$lib/project-state.svelte";
 
   let loadingText = $state(returnLoadingText());
   let loadingTextInterval: NodeJS.Timeout = $state() as NodeJS.Timeout;
@@ -48,8 +47,6 @@
     }
   });
 
-  // Check if user has submitted a project
-  const hasProject = $derived(getHasProject());
   const getDisplayName = () => {
     const user = getAuthenticatedUser().user;
     return (
@@ -79,11 +76,13 @@
     }
   };
 
-  // Navigation options — always show Events; show Projects only once user has submitted one
+  // Navigation options
   const navOptions = $derived.by(() => {
-    const base = hasProject
-      ? { "/": { label: "Home", icon: "home" }, "/projects": { label: "Projects", icon: "projects" }, "/events": { label: "Events", icon: "events" } }
-      : { "/": { label: "Home", icon: "home" }, "/events": { label: "Events", icon: "events" } };
+    const base = {
+      "/": { label: "Home", icon: "home" },
+      "/projects": { label: "Projects", icon: "projects" },
+      "/events": { label: "Events", icon: "events" },
+    };
     const currentUser = getAuthenticatedUser().user;
     if (currentUser.is_superadmin) {
       return {

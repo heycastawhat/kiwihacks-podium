@@ -2,7 +2,7 @@
   import { EventsService, ProjectsService } from "$lib/client/sdk.gen";
   import type { EventPublic, ProjectPublic } from "$lib/client";
   import { toast } from "svelte-sonner";
-  import { customInvalidateAll, handleError } from "$lib/misc";
+  import { customInvalidateAll, handleError, withHttpsIfMissing } from "$lib/misc";
   import { asyncClick } from "$lib/actions/asyncClick";
   import type { ProjectPrivate, ProjectUpdate } from "$lib/client/types.gen";
   import { onMount } from "svelte";
@@ -95,10 +95,19 @@
   // });
 
   async function updateProject() {
+    const payload: ProjectUpdate = {
+      ...preselectedProject,
+      image_url: withHttpsIfMissing(preselectedProject.image_url),
+      demo: withHttpsIfMissing(preselectedProject.demo),
+      repo: withHttpsIfMissing(preselectedProject.repo),
+    };
+
+    Object.assign(preselectedProject, payload);
+
     const { error: err } =
       await ProjectsService.updateProjectProjectsProjectIdPut({
         path: { project_id: preselectedProject.id },
-        body: preselectedProject,
+        body: payload,
         throwOnError: false,
       });
     if (err) {
@@ -113,10 +122,10 @@
 </script>
 
 <Modal bind:this={localModal} title="Update Project">
-  <div class="p-4 max-w-md mx-auto">
+  <div class="mx-auto w-full max-w-3xl px-2 py-3 sm:px-4 sm:py-4">
     <!-- <form onsubmit={updateProject} class="space-y-4"> -->
     <div class="space-y-4">
-      <fieldset class="fieldset">
+      <fieldset class="fieldset gap-3 p-4 sm:p-5">
         <label class="label" for="project_name">Project Name</label>
         <input
           id="project_name"

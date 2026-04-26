@@ -84,3 +84,16 @@ export async function customInvalidateAll() {
   await invalidateAll();
   await invalidateUser();
 }
+
+const URL_SCHEME_REGEX = /^[a-z][a-z\d+\-.]*:\/\//i;
+
+/**
+ * Make pasted host/path links usable by adding https:// when scheme is missing.
+ */
+export function withHttpsIfMissing(url: string | null | undefined): string {
+  const trimmed = (url ?? "").trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (URL_SCHEME_REGEX.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}

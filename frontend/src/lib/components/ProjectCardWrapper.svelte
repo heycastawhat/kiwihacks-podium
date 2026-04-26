@@ -60,7 +60,7 @@
 <div class="h-full rounded-[28px] border-2 border-dashed border-base-content/35 bg-base-100/85 p-4 shadow-sm">
   <div class="space-y-3">
     <div class="text-center">
-      <p class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Event</p>
+      <p class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Event Name</p>
       {#if eventForProject}
         <a
           href={`/events/${eventForProject.slug}`}

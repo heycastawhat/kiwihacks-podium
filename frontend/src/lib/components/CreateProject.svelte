@@ -3,7 +3,7 @@
   import { EventsService, ProjectsService } from "$lib/client/sdk.gen";
   import type { ProjectCreate, EventPublic } from "$lib/client";
   import { toast } from "svelte-sonner";
-  import { customInvalidateAll, handleError } from "$lib/misc";
+  import { customInvalidateAll, handleError, withHttpsIfMissing } from "$lib/misc";
   import { asyncClick } from "$lib/actions/asyncClick";
   import Modal from "$lib/components/Modal.svelte";
   import { isValidItchUrl, isValidGitHubUrl } from "$lib/validation";
@@ -64,9 +64,16 @@
   }
 
   async function createProject() {
+    const payload: ProjectCreate = {
+      ...project,
+      image_url: withHttpsIfMissing(project.image_url),
+      demo: withHttpsIfMissing(project.demo),
+      repo: withHttpsIfMissing(project.repo),
+    };
+
     const { data, error: err } =
       await ProjectsService.createProjectProjectsPost({
-        body: project,
+        body: payload,
         throwOnError: false,
       });
     if (err) {
