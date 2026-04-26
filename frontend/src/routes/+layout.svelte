@@ -18,11 +18,11 @@
   import DevModeIndicator from "$lib/components/DevModeIndicator.svelte";
   import { resetAirtableHits } from "$lib/airtable-hits.svelte";
   import { getHasProject } from "$lib/project-state.svelte";
-  import Modal from "$lib/components/Modal.svelte";
 
   let loadingText = $state(returnLoadingText());
   let loadingTextInterval: NodeJS.Timeout = $state() as NodeJS.Timeout;
-  let settingsModal: Modal = $state() as Modal;
+  let settingsPopoutOpen = $state(false);
+  let sidebarSettingsEl: HTMLDivElement | null = $state(null);
 
   // Reactive variables for meta tags to ensure they update properly
   const title = $derived(
@@ -60,6 +60,24 @@
     const user = getAuthenticatedUser().user;
     return user.first_name?.trim() || getDisplayName();
   };
+  const toggleSettingsPopout = () => {
+    settingsPopoutOpen = !settingsPopoutOpen;
+  };
+  const closeSettingsPopout = () => {
+    settingsPopoutOpen = false;
+  };
+  const handleSettingsOutsideClick = (event: MouseEvent) => {
+    if (!settingsPopoutOpen || !sidebarSettingsEl) return;
+    const target = event.target as Node | null;
+    if (target && !sidebarSettingsEl.contains(target)) {
+      closeSettingsPopout();
+    }
+  };
+  const handleSettingsEscape = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      closeSettingsPopout();
+    }
+  };
 
   // Navigation options — always show Events; show Projects only once user has submitted one
   const navOptions = $derived.by(() => {
@@ -95,6 +113,8 @@
     console.debug("Page data:", page.data);
     themeChange(false);
     setSystemTheme();
+    window.addEventListener("click", handleSettingsOutsideClick);
+    window.addEventListener("keydown", handleSettingsEscape);
 
     // Update loading text every 4 seconds
     loadingTextInterval = setInterval(() => {
@@ -104,6 +124,8 @@
 
   onDestroy(() => {
     clearInterval(loadingTextInterval);
+    window.removeEventListener("click", handleSettingsOutsideClick);
+    window.removeEventListener("keydown", handleSettingsEscape);
   });
 </script>
 
@@ -238,53 +260,69 @@
         </div>
 
         <!-- Bottom Section -->
-        <div class="p-4 border-t border-base-300" id="sidebar-settings">
+        <div
+          class="p-4 border-t border-base-300"
+          id="sidebar-settings"
+          bind:this={sidebarSettingsEl}
+        >
+          {#if settingsPopoutOpen}
+            <div class="sidebar-settings-popout" id="settings-popout">
+              <div class="sidebar-settings-section">
+                <h3 class="sidebar-settings-heading">Account</h3>
+                <p class="sidebar-settings-meta">
+                  Signed in as: <strong>{getAuthenticatedUser().user.email}</strong>
+                </p>
+                <p class="sidebar-settings-meta">
+                  Display Name: <strong>{getDisplayName()}</strong>
+                </p>
+                <div class="sidebar-settings-actions">
+                  <UpdateUser
+                    user={getAuthenticatedUser().user}
+                    buttonClass="btn btn-outline"
+                  />
+                  <button class="btn btn-outline" onclick={signOut}>Sign out</button>
+                </div>
+              </div>
+              <div class="sidebar-settings-section">
+                <h3 class="sidebar-settings-heading">Theme</h3>
+                <ThemeSwitcher
+                  buttonClass="btn btn-outline m-0"
+                  dropdownClass="dropdown-top"
+                />
+              </div>
+            </div>
+          {/if}
           <button
             class="sidebar-settings-trigger"
-            onclick={() => {
-              settingsModal.openModal();
-            }}
+            aria-expanded={settingsPopoutOpen}
+            aria-controls="settings-popout"
+            onclick={toggleSettingsPopout}
           >
             <div class="sidebar-settings-copy">
               <p class="sidebar-settings-name">Kia ora, {getGreetingName()}!</p>
               <p class="sidebar-settings-email">{getAuthenticatedUser().user.email}</p>
             </div>
-            <span class="sidebar-settings-pill">Settings</span>
+            <span class="sidebar-settings-pill" aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 sidebar-settings-chevron"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d={iconPaths.chevron}
+                />
+              </svg>
+            </span>
           </button>
         </div>
       </div>
     </div>
   </div>
-
-  <Modal bind:this={settingsModal} title="Settings">
-    <div class="space-y-4 py-4" id="settings-panel">
-      <div class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-2">
-          <h3 class="card-title text-sm">Account</h3>
-          <p class="text-sm text-base-content/70 break-words">
-            Signed in as <strong>{getAuthenticatedUser().user.email}</strong>
-          </p>
-          <p class="text-sm text-base-content/70 break-words">
-            Display name: <strong>{getDisplayName()}</strong>
-          </p>
-          <div class="mt-2 flex flex-col gap-2">
-            <UpdateUser
-              user={getAuthenticatedUser().user}
-              buttonClass="btn btn-outline btn-block"
-            />
-            <button class="btn btn-outline btn-block" onclick={signOut}>Sign out</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card bg-base-100 shadow-sm">
-        <div class="card-body gap-2">
-          <h3 class="card-title text-sm">Theme</h3>
-          <ThemeSwitcher buttonClass="btn btn-outline m-0" />
-        </div>
-      </div>
-    </div>
-  </Modal>
 {:else}
   <!-- Login page or unauthenticated users without sidebar -->
   <div class="min-h-screen flex flex-col" id="landing">

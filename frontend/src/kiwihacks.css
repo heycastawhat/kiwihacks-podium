@@ -70,17 +70,12 @@
 
 [data-theme^="kiwihacks"] #sidebar-ui {
   background-color: var(--kh-blue-soft);
-  background-image:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.18) 0%,
-      rgba(255, 255, 255, 0.06) 28%,
-      rgba(255, 255, 255, 0) 55%
-    ),
-    url("/assets/kiwihacks/stars.png");
-  background-size: 100% 100%, 225px 225px;
-  background-repeat: no-repeat, repeat;
-  background-position: center top, center top;
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 28%,
+    rgba(255, 255, 255, 0) 55%
+  );
   border-right: var(--kh-border);
 }
 
@@ -118,6 +113,25 @@
   background: rgba(255, 255, 255, 0.75);
 }
 
+[data-theme^="kiwihacks"] #sidebar-settings .sidebar-settings-popout {
+  border: var(--kh-border);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+[data-theme^="kiwihacks"] #sidebar-settings .sidebar-settings-heading {
+  font-family: "ABeeZee", "Figtree", sans-serif;
+  letter-spacing: 0.01em;
+}
+
+[data-theme^="kiwihacks"] #sidebar-settings .sidebar-settings-meta {
+  color: var(--kh-ink-soft);
+}
+
+[data-theme^="kiwihacks"] #sidebar-settings .sidebar-settings-meta strong {
+  color: var(--kh-ink);
+}
+
 [data-theme^="kiwihacks"] #sidebar-settings .sidebar-settings-name {
   font-family: "ABeeZee", "Figtree", sans-serif;
   letter-spacing: 0.01em;
@@ -134,7 +148,7 @@
   background: rgba(255, 255, 255, 0.72);
 }
 
-[data-theme^="kiwihacks"] #settings-panel .card {
+[data-theme^="kiwihacks"] #sidebar-settings #theme-switcher .btn {
   background: rgba(255, 255, 255, 0.72);
 }
 
