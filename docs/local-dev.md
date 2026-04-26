@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- [Doppler CLI](https://docs.doppler.com/docs/install-cli) configured
+- [Doppler CLI](https://docs.doppler.com/docs/install-cli) (optional; only if you want Doppler-managed secrets)
 - Docker (for Postgres)
 - Node.js + Bun (frontend)
 - Python + uv (backend)
@@ -10,14 +10,11 @@
 ## Quick Start
 
 ```bash
-# Start Postgres
+# Start Postgres + backend API
 docker compose up -d
 
-# Run migrations
-cd backend && doppler run --config dev -- uv run alembic upgrade head
-
-# Start backend
-cd backend && doppler run --config dev -- uv run podium
+# Run migrations (first boot + after schema changes)
+cd backend && PODIUM_DATABASE_URL=postgresql+asyncpg://postgres:localpass@localhost:5432/podium?sslmode=disable uv run alembic upgrade head
 
 # Start frontend (separate terminal)
 cd frontend && bun dev
@@ -25,7 +22,7 @@ cd frontend && bun dev
 
 ## Docker Compose
 
-The root `docker-compose.yaml` starts Postgres on port 5432 and Redis on port 6379.
+The root `docker-compose.yaml` starts Postgres on `5432` and backend on `8000`.
 
 First time:
 ```bash
@@ -33,7 +30,12 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Redis is optional — the app works normally without it (caching is silently disabled). To enable caching locally, set `PODIUM_REDIS_URL=redis://localhost:6379` in your Doppler dev config or `settings.toml`.
+Redis is optional and off by default — run it only when needed:
+```bash
+docker compose --profile cache up -d
+```
+
+Caching is silently disabled unless `PODIUM_REDIS_URL` is set. If backend runs in Docker, use `redis://podium-redis:6379`.
 
 ## Turnstile (CAPTCHA)
 

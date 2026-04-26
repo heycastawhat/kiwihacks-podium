@@ -1,6 +1,6 @@
-# Local dev: docker compose up
-# Runs Postgres (localhost:5432) + Redis (localhost:6379)
-# Set DOPPLER_TOKEN in .env first (see .env.example)
+# Local dev: docker compose up -d
+# Runs Postgres (localhost:5432) + backend API (localhost:8000)
+# Redis is optional: docker compose --profile cache up -d
 
 services:
   podium-pg:
@@ -15,7 +15,39 @@ services:
       interval: 5s
       retries: 5
 
+  podium-backend:
+    build: ./backend
+    entrypoint: []
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - uvicorn
+      - podium.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment:
+      PODIUM_DATABASE_URL: postgresql+asyncpg://postgres:localpass@podium-pg:5432/podium?sslmode=disable
+      PODIUM_JWT_SECRET: ${PODIUM_JWT_SECRET:-local-dev-jwt-secret-change-me}
+      PODIUM_HACKCLUB_CLIENT_ID: ${PODIUM_HACKCLUB_CLIENT_ID:-}
+      PODIUM_HACKCLUB_CLIENT_SECRET: ${PODIUM_HACKCLUB_CLIENT_SECRET:-}
+      PODIUM_PRODUCTION_URL: ${PODIUM_PRODUCTION_URL:-https://kiwihacks-podium.vercel.app}
+      PODIUM_ACTIVE_EVENT_SERIES: ${PODIUM_ACTIVE_EVENT_SERIES:-flagship}
+      PODIUM_REDIS_URL: ""
+    ports: ["8000:8000"]
+    depends_on:
+      podium-pg: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/openapi.json >/dev/null || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 15s
+
   podium-redis:
+    profiles: ["cache"]
     image: redis:7-alpine
     ports: ["6379:6379"]
     healthcheck:

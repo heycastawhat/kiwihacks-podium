@@ -245,6 +245,9 @@
                   onclick={signOut}>Sign out</button
                 >
               </div>
+              <div class="mt-2">
+                <ThemeSwitcher />
+              </div>
             </div>
           </div>
         </div>
@@ -264,6 +267,14 @@
       </div>
       <div class="navbar-end gap-2">
         <a href="/events" class="btn btn-ghost btn-sm">Events</a>
+        <a
+          href="https://www.kiwihacks.org"
+          target="_blank"
+          rel="noreferrer"
+          class="btn btn-secondary btn-sm"
+        >
+          KiwiHacks
+        </a>
         {#if page.url.pathname !== "/login"}
           <a href="/login" class="btn btn-primary btn-sm">Sign In</a>
         {/if}
@@ -285,9 +296,11 @@
 {/if}
 
 <!-- Global Theme Switcher (Bottom Left) -->
-<div class="fixed bottom-4 left-4 z-50">
-  <ThemeSwitcher />
-</div>
+{#if !isAuthenticated}
+  <div class="fixed bottom-4 left-4 z-50">
+    <ThemeSwitcher />
+  </div>
+{/if}
 
 
 <!-- Dev Mode Indicator (red border + notice) -->

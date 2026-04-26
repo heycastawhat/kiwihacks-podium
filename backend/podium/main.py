@@ -15,9 +15,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from podium.limiter import limiter, get_user_or_ip_for_sentry
 
 sentry_sdk.init(
-    dsn=""
-    if os.getenv("ENV_FOR_DYNACONF") == "development"
-    else "https://489f4a109d07aeadfd13387bcd3197ab@o4508979744210944.ingest.de.sentry.io/4508979747553360",
+    dsn="",
     send_default_pii=True,
     traces_sample_rate=1.0,
 )

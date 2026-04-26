@@ -50,8 +50,8 @@
       </svg>
     </button>
     <p class="text-info-content pr-8">
-      If Podium isn't working and you need urgent help, DM @Angad Behl on Slack
-      or call +1 (415) 570-4995.
+      If Podium is not working and you need urgent help, ask an organiser for
+      help.
     </p>
   </div>
 {/if}
@@ -70,28 +70,11 @@
 <!-- Help Modal -->
 <Modal bind:this={helpModal} title="About Podium">
   <p class="py-4">
-    Podium is <a href="https://hackclub.com" class="hover-link">Hack Club's </a>
-    <a href="https://github.com/hackclub/podium" class="hover-link"
-      >open-source</a
-    >
-    peer-judging platform for
-    <a href="https://hackathons.hackclub.com/" class="hover-link">hackathons</a
-    >. If you encounter issues, feel free to
-    <a href="https://github.com/hackclub/podium/issues" class="hover-link"
-      >report</a
-    >
-    them. Need help? Ask on the
-    <a href="https://hackclub.com/slack" class="hover-link">Slack</a>
-    or email
-    <a href="mailto:angad@hackclub.com" class="hover-link">angad@hackclub.com</a
-    >.
+    Podium is Kiwihacks's peer-judging platform for hackathons, based on
+    Hack Club's podium.
   </p>
   <p class="py-2">
-    <strong>Urgent Help:</strong> If Podium isn't working and you need immediate
-    assistance, DM @Angad Behl on Slack or call
-    <a href="tel:+14155704995" class="hover-link">+1 (415) 570-4995</a>.
-  </p>
-  <p class="text-right">
-    <a href="https://github.com/slashtechno" class="hover-link">-Angad Behl</a>
+    <strong>Urgent Help:</strong> If Podium is not working and you need
+    immediate assistance, ask an organiser for help.
   </p>
 </Modal>

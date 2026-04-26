@@ -37,7 +37,14 @@ def _build_async_engine(url: str):
     normalized_url = urlunparse(parsed._replace(query=urlencode(qs, doseq=True)))
 
     connect_args: dict = {}
-    if sslmode == "require" or (parsed.hostname and parsed.hostname not in {"localhost", "127.0.0.1"}):
+    host = (parsed.hostname or "").lower()
+    local_hosts = {"localhost", "127.0.0.1", "::1", "podium-pg"}
+
+    # Respect explicit disable; otherwise keep prior behavior of enabling SSL
+    # for non-local hosts when sslmode is omitted.
+    if sslmode != "disable" and (
+        sslmode == "require" or (sslmode is None and host and host not in local_hosts)
+    ):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE

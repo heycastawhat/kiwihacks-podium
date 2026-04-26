@@ -11,18 +11,13 @@ const createDaisyUIThemes = (
     })
     .join(", ");
 };
-// export const themes = ["coffee", "night", "retro", "nord", "dracula"];
 export const themes = [
-  "coffee",
-  "night",
-  "retro",
-  "dracula",
-  "sleepover",
-  // "undercity",
+  "kiwihacks",
+  "catppuccin-latte",
+  "catppuccin-mocha",
 ];
-export const lightTheme = "sleepover";
-// export const darkTheme = "coffee";
-export const darkTheme = "sleepover";
+export const lightTheme = "kiwihacks";
+export const darkTheme = "kiwihacks";
 export const daisyUIThemes = createDaisyUIThemes(darkTheme, lightTheme, themes);
 
 export const loadingTextOptions = [

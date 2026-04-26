@@ -25,7 +25,19 @@
   };
   const eventHeroImages: Record<string, string> = {
     sleepover: "https://wsrv.nl/?url=sleepover.hackclub.com/background/sleepover_logo.PNG&output=webp&h=288&fit=contain",
+    kiwihacks: "/assets/kiwihacks/kiwi-logo.png",
   };
+
+  function getEventHeroImage(event: EventPublic): string | undefined {
+    const bySlug = eventHeroImages[event.slug];
+    if (bySlug) return bySlug;
+
+    if (event.name.toLowerCase().includes("kiwihacks")) {
+      return eventHeroImages.kiwihacks;
+    }
+
+    return undefined;
+  }
 </script>
 
 {#if loading}
@@ -40,14 +52,14 @@
   <div class="flex justify-center">
     <a
       href={`/events/${events[0].slug}`}
-      class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group w-full max-w-lg"
+      class="official-event-card card bg-base-100 border border-base-300 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group w-full max-w-lg"
     >
-      {#if eventHeroImages[events[0].slug]}
+      {#if getEventHeroImage(events[0])}
         <figure class="px-10 pt-8 pb-2">
           <img
-            src={eventHeroImages[events[0].slug]}
+            src={getEventHeroImage(events[0])}
             alt={events[0].name}
-            class="h-36 object-contain"
+            class="official-event-hero h-36 object-contain"
           />
         </figure>
       {/if}
@@ -70,16 +82,23 @@
     </a>
   </div>
 {:else if events.length > 1}
-  <div class="divider text-base-content/40 text-sm font-medium">
+  <div class="official-events-divider divider text-base-content/40 text-sm font-medium">
     {events.length} events
   </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#each events as event (event.id)}
       <a
         href={`/events/${event.slug}`}
-        class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
+        class="official-event-card card bg-base-100 border border-base-300 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
       >
         <div class="card-body gap-3">
+          {#if getEventHeroImage(event)}
+            <img
+              src={getEventHeroImage(event)}
+              alt={event.name}
+              class="official-event-hero h-24 object-contain mx-auto"
+            />
+          {/if}
           <div class="flex items-start justify-between gap-2">
             <h2 class="card-title text-base group-hover:text-primary transition-colors">
               {event.name}
@@ -94,7 +113,7 @@
             </p>
           {/if}
           <div class="flex justify-end">
-            <span class="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            <span class="official-event-view text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
               View event →
             </span>
           </div>

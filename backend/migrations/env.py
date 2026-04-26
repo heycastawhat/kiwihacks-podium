@@ -23,6 +23,7 @@ from podium.db import postgres  # noqa: F401
 
 # Alembic config object (reads from alembic.ini)
 config = context.config
+requested_sslmode: str | None = None
 
 # Get database URL from environment (Doppler sets PODIUM_DATABASE_URL)
 database_url = os.environ.get("PODIUM_DATABASE_URL") or os.environ.get("DATABASE_URL")
@@ -34,6 +35,7 @@ if database_url:
     parsed = urlparse(sync_url)
     if parsed.query:
         qs = parse_qs(parsed.query, keep_blank_values=True)
+        requested_sslmode = qs.get("sslmode", [None])[-1]
         qs.pop("sslrootcert", None)
         qs.pop("sslmode", None)
         sync_url = urlunparse(parsed._replace(query=urlencode(qs, doseq=True)))
@@ -66,10 +68,16 @@ def run_migrations_online() -> None:
     This is the normal mode - connects to the database and applies changes.
     """
     url = config.get_main_option("sqlalchemy.url") or ""
-    # For remote DBs, use sslmode=require (encrypted, no CA verification).
-    # The production host uses a private CA not in the local trust store.
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").lower()
+    local_hosts = {"localhost", "127.0.0.1", "::1", "podium-pg"}
+
+    # Respect explicit sslmode=disable from PODIUM_DATABASE_URL.
+    # Otherwise keep existing behavior: require SSL for non-local hosts.
     connect_args: dict = {}
-    if "localhost" not in url and "127.0.0.1" not in url:
+    if requested_sslmode != "disable" and (
+        requested_sslmode == "require" or (requested_sslmode is None and host and host not in local_hosts)
+    ):
         connect_args["sslmode"] = "require"
 
     connectable = engine_from_config(

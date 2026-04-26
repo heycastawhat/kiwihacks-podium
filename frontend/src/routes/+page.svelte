@@ -67,17 +67,33 @@
 
 {#if !getAuthenticatedUser().access_token}
   <!-- Unauthenticated: event-first landing — no login wall -->
-  <div class="max-w-6xl mx-auto space-y-10">
+  <div class="max-w-6xl mx-auto space-y-8">
     <!-- Hero -->
-    <div class="flex flex-col items-center text-center gap-4 py-8">
-      <img src="/favicon.svg" alt="Podium" class="w-16 h-16" />
-      <div>
-        <h1 class="text-5xl font-bold text-base-content">Podium</h1>
-        <p class="text-base-content/60 mt-2 text-lg">
-          Hack Club's peer-judging platform for hackathons
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body flex flex-col items-center text-center gap-5 py-8">
+        <img
+          src="/assets/kiwihacks/kiwi-logo.png"
+          alt="KiwiHacks mascot"
+          class="w-40 md:w-48 object-contain select-none"
+        />
+        <img
+          src="/assets/kiwihacks/kiwi-text.png"
+          alt="Kiwihacks"
+          class="w-72 md:w-[28rem] object-contain select-none"
+        />
+        <p class="mono text-lg text-base-content/80">
+          {officialEvents[0]?.description ||
+            "Hackathon peer judging platform for submissions, voting, and leaderboards."}
         </p>
+
+        <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-primary/30 rounded-2xl border border-base-300">
+          <div class="font-medium">Project submissions</div>
+          <div class="font-medium">Peer voting</div>
+          <div class="font-medium">Live leaderboard</div>
+        </div>
+
+        <a href="/login" class="btn btn-primary btn-lg mt-1">Sign in to participate</a>
       </div>
-      <a href="/login" class="btn btn-primary btn-lg mt-2">Sign in to participate</a>
     </div>
 
     <OfficialEventsDisplay events={officialEvents} {loading} />

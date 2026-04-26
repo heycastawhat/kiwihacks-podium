@@ -1,148 +1,105 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=ABeeZee:ital@0;1&family=Figtree:wght@400;500;600;700;800&family=Source+Code+Pro:wght@500;700&display=swap");
 @import "tailwindcss";
-@import "./sleepover.css";
+@import "./kiwihacks.css";
 
 @plugin '@tailwindcss/typography';
 
 @plugin "daisyui" {
   themes:
-    coffee,
-    night --prefersdark, night,
-    retro,
-    dracula,
-    sleepover;
+    kiwihacks,
+    catppuccin-latte,
+    catppuccin-mocha;
 }
 
-/* Sleepover theme — pastel kawaii inspired by sleepover.hackclub.com */
 @plugin "daisyui/theme" {
-  name: "sleepover";
-  default: false;
-  prefersdark: false;
-  --color-base-100: #c8caf0;
-  --color-base-200: #b4b8e8;
-  --color-base-300: #9aa0dc;
-  --color-base-content: #2d3a7a;
-  --color-primary: #6c8be1;
-  --color-primary-content: #ffffff;
-  --color-secondary: #dfa1aa;
-  --color-secondary-content: #2d1a3d;
-  --color-accent: #f5e2a0;
-  --color-accent-content: #3a2c00;
-  --color-neutral: #3d4b8f;
-  --color-neutral-content: #ffffff;
-  --color-info: #91baf2;
-  --color-info-content: #1a2040;
-  --color-success: #a8e8c4;
-  --color-success-content: #023818;
-  --color-warning: #f5e2a0;
-  --color-warning-content: #3a2c00;
-  --color-error: #dfa1aa;
-  --color-error-content: #2d1a3d;
-  --radius-selector: 9999px;
-  --radius-field: 9999px;
-  --radius-box: 1.25rem;
-}
-
-/* Hack Club brand theme — red primary, clean whites */
-@plugin "daisyui/theme" {
-  name: "hackclub";
+  name: "kiwihacks";
   default: true;
   prefersdark: false;
-  --color-base-100: #ffffff;
-  --color-base-200: #f6f6f6;
-  --color-base-300: #e8e8e8;
-  --color-base-content: #1d1d1d;
-  --color-primary: #ec3750;
-  --color-primary-content: #ffffff;
-  --color-secondary: #ff8c37;
-  --color-secondary-content: #ffffff;
-  --color-accent: #33d6a6;
-  --color-accent-content: #000000;
-  --color-neutral: #252429;
-  --color-neutral-content: #ffffff;
-  --color-info: #338eda;
-  --color-info-content: #ffffff;
-  --color-success: #33d6a6;
-  --color-success-content: #000000;
+  --color-base-100: #f2f1ee;
+  --color-base-200: #eae6e2;
+  --color-base-300: #d8ddd0;
+  --color-base-content: #132f1e;
+  --color-primary: #76b070;
+  --color-primary-content: #132f1e;
+  --color-secondary: #91e2ff;
+  --color-secondary-content: #132f1e;
+  --color-accent: #36c6fb;
+  --color-accent-content: #05101e;
+  --color-neutral: #2e522b;
+  --color-neutral-content: #f2f1ee;
+  --color-info: #91e2ff;
+  --color-info-content: #132f1e;
+  --color-success: #88bc82;
+  --color-success-content: #102418;
   --color-warning: #f1ca4d;
-  --color-warning-content: #000000;
-  --color-error: #ec3750;
-  --color-error-content: #ffffff;
-  --radius-selector: 0.5rem;
-  --radius-field: 0.375rem;
-  --radius-box: 0.5rem;
-}
-/* 
-@plugin "daisyui/theme" {
-  name: "undercity";
-  default: false;
-  prefersdark: false;
-  --color-base-100: #2e2a54;
-  --color-base-200: #272239;
-  --color-base-300: rgba(86, 76, 173);
-  --color-base-content: oklch(100% 0 0);
-  --color-primary: #544fff;
-  --color-primary-content: oklch(100% 0 0);
-  --color-secondary: rgb(209, 175, 239);
-  --color-secondary-content: oklch(38% 0.176 304.987);
-  --color-accent: rgb(245, 131, 228);
-  --color-accent-content: oklch(40% 0.153 2.432);
-  --color-neutral: #2e2a54;
-  --color-neutral-content: oklch(100% 0 0);
-  --color-info: rgb(175, 189, 239);
-  --color-info-content: oklch(42% 0.199 265.638);
-  --color-success: rgb(134, 227, 168);
-  --color-success-content: oklch(43% 0.095 166.913);
-  --color-warning: oklch(90.5% 0.182 98.111);
-  --color-warning-content: oklch(55% 0.163 48.998);
-  --color-error: #ff00b8;
-  --color-error-content: oklch(100% 0 0);
-  --radius-selector: 1rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 1;
-  --noise: 1;
+  --color-warning-content: #2c2100;
+  --color-error: #b04747;
+  --color-error-content: #fff2f2;
+  --radius-selector: 0.9rem;
+  --radius-field: 0.9rem;
+  --radius-box: 1rem;
 }
 
 @plugin "daisyui/theme" {
-  name: "daydream";
+  name: "catppuccin-latte";
   default: false;
   prefersdark: false;
-  --color-base-100: #fef9dc;
-  --color-base-200: #fffef2;
-  --color-base-300: #d3b180;
-  --color-base-content: rgb(139, 69, 19);
-  --color-primary: rgb(245, 131, 228);
-  --color-primary-content: oklch(100% 0 0);
-  --color-secondary: rgb(209, 175, 239);
-  --color-secondary-content: oklch(38% 0.176 304.987);
-  --color-accent: #7cc4f0;
-  --color-accent-content: oklch(40% 0.153 2.432);
-  --color-neutral: #fef9dc;
-  --color-neutral-content: rgb(139, 69, 19);
-  --color-info: #c8eefc;
-  --color-info-content: #022937;
-  --color-success: #cafcdb;
-  --color-success-content: #023815;
-  --color-warning: #fcfbca;
-  --color-warning-content: #2d2d15;
-  --color-error: #fee7ea;
-  --color-error-content: #540b16;
-  --radius-selector: 1rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 1;
-  --noise: 1;
-} */
+  --color-base-100: #eff1f5;
+  --color-base-200: #e6e9ef;
+  --color-base-300: #dce0e8;
+  --color-base-content: #4c4f69;
+  --color-primary: #1e66f5;
+  --color-primary-content: #eff1f5;
+  --color-secondary: #8839ef;
+  --color-secondary-content: #eff1f5;
+  --color-accent: #179299;
+  --color-accent-content: #eff1f5;
+  --color-neutral: #5c5f77;
+  --color-neutral-content: #eff1f5;
+  --color-info: #04a5e5;
+  --color-info-content: #eff1f5;
+  --color-success: #40a02b;
+  --color-success-content: #eff1f5;
+  --color-warning: #df8e1d;
+  --color-warning-content: #2c1600;
+  --color-error: #d20f39;
+  --color-error-content: #fff1f2;
+  --radius-selector: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "catppuccin-mocha";
+  default: false;
+  prefersdark: false;
+  --color-base-100: #1e1e2e;
+  --color-base-200: #181825;
+  --color-base-300: #11111b;
+  --color-base-content: #cdd6f4;
+  --color-primary: #89b4fa;
+  --color-primary-content: #1e1e2e;
+  --color-secondary: #cba6f7;
+  --color-secondary-content: #1e1e2e;
+  --color-accent: #94e2d5;
+  --color-accent-content: #11111b;
+  --color-neutral: #313244;
+  --color-neutral-content: #cdd6f4;
+  --color-info: #89dceb;
+  --color-info-content: #11111b;
+  --color-success: #a6e3a1;
+  --color-success-content: #11111b;
+  --color-warning: #f9e2af;
+  --color-warning-content: #2c2416;
+  --color-error: #f38ba8;
+  --color-error-content: #11111b;
+  --radius-selector: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+}
 
 @theme {
-  --font-sans: Phantom Sans, sans-serif;
+  --font-sans: Figtree, Phantom Sans, sans-serif;
 }
 
 /*
