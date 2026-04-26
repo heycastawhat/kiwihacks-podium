@@ -1,16 +1,60 @@
 <script lang="ts">
-  import { themes } from "$lib/consts";
+  import { onMount } from "svelte";
+  import { lightTheme, themes } from "$lib/consts";
   import { setSystemTheme } from "$lib/misc";
 
   let {
     buttonClass = "btn m-1",
     dropdownClass = "dropdown-top",
   }: { buttonClass?: string; dropdownClass?: string } = $props();
+
+  let currentTheme = $state(lightTheme);
+  let usingSystemTheme = $state(false);
+  const radioGroupName = `theme-dropdown-${Math.random().toString(36).slice(2, 9)}`;
+
+  function formatThemeLabel(theme: string): string {
+    return theme
+      .split("-")
+      .map((part) => part[0].toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
+  function syncThemeState() {
+    if (typeof document === "undefined") return;
+    const storedTheme = localStorage.getItem("theme");
+    usingSystemTheme = !storedTheme;
+    currentTheme =
+      document.documentElement.getAttribute("data-theme") ||
+      storedTheme ||
+      lightTheme;
+  }
+
+  function handleSystemThemeChange() {
+    localStorage.removeItem("theme");
+    setSystemTheme();
+    queueMicrotask(syncThemeState);
+  }
+
+  function handleThemeInputChange() {
+    queueMicrotask(syncThemeState);
+  }
+
+  onMount(() => {
+    syncThemeState();
+    const root = document.documentElement;
+    const observer = new MutationObserver(syncThemeState);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    window.addEventListener("storage", syncThemeState);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", syncThemeState);
+    };
+  });
 </script>
 
 <div class={`dropdown ${dropdownClass}`} id="theme-switcher">
   <div tabindex="0" role="button" class={buttonClass}>
-    Theme
+    Theme: {formatThemeLabel(currentTheme)}
     <svg
       width="12px"
       height="12px"
@@ -27,30 +71,30 @@
     tabindex="0"
     class="dropdown-content bg-base-300 rounded-box z-1 w-52 p-1 shadow-2xl overflow-auto max-h-52 mr-0"
     role="menu"
+    onchange={handleThemeInputChange}
   >
     <!-- Option to respect system theme by removing the theme from localStorage -->
     <li>
       <input
         type="radio"
-        name="theme-dropdown"
+        name={radioGroupName}
         class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
         aria-label="system"
-        onchange={() => {
-          localStorage.removeItem("theme");
-          setSystemTheme();
-        }}
+        checked={usingSystemTheme}
+        onchange={handleSystemThemeChange}
       />
     </li>
     {#each themes as theme}
       <li>
         <input
           type="radio"
-          name="theme-dropdown"
+          name={radioGroupName}
           class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
           value={theme}
           aria-label={theme}
           data-set-theme={theme}
           data-act-class="ACTIVECLASS"
+          checked={!usingSystemTheme && currentTheme === theme}
         />
       </li>
     {/each}

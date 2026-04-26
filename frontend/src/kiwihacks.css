@@ -132,6 +132,10 @@
   color: var(--kh-ink);
 }
 
+[data-theme="kiwihacks"] #sidebar-settings .sidebar-settings-section + .sidebar-settings-section {
+  border-top: var(--kh-border);
+}
+
 [data-theme="kiwihacks"] #sidebar-settings .sidebar-settings-name {
   font-family: "ABeeZee", "Figtree", sans-serif;
   letter-spacing: 0.01em;
