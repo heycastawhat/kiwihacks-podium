@@ -24,6 +24,9 @@
   let isVerifying = $state(false);
   let showSignupFields = $state(false);
   let expandedDueTo = "";
+  const hackClubSsoEnabled = $derived(
+    Boolean(env.PUBLIC_SSO_CLIENT_ID || env.PUBLIC_HACKCLUB_CLIENT_ID),
+  );
   let userInfo: UserSignup = $state({
     ...defaultUser,
   });
@@ -208,14 +211,14 @@
       <p class="mt-2">Verifying your magic link...</p>
     </div>
   {:else}
-    {#if env.PUBLIC_SSO_CLIENT_ID}
+    {#if hackClubSsoEnabled}
       <a
         href="{env.PUBLIC_API_URL}/auth/sso"
         class="btn w-full mb-1 gap-2"
         style="background-color: #ec3750; color: white; border-color: #ec3750;"
       >
-        <img src="/favicon.svg" alt="SSO" class="w-5 h-5" />
-        Login with SSO
+        <img src="/favicon.svg" alt="Hack Club" class="w-5 h-5" />
+        Sign in with Hack Club
       </a>
       <div class="divider my-2">or use email</div>
     {/if}
