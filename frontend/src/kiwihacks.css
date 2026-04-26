@@ -28,18 +28,6 @@
   position: relative;
 }
 
-[data-theme="kiwihacks"] body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.22;
-  background-image: url("/assets/kiwihacks/stars.png");
-  background-repeat: repeat;
-  background-size: min(540px, 44vw);
-}
-
 [data-theme="kiwihacks"] body::after {
   content: "";
   position: fixed;
@@ -265,11 +253,6 @@
 }
 
 @media (max-width: 768px) {
-  [data-theme="kiwihacks"] body::before {
-    opacity: 0.12;
-    background-size: 280px;
-  }
-
   [data-theme="kiwihacks"] #landing-content {
     margin-top: 0.8rem;
     padding-left: 0.2rem;
