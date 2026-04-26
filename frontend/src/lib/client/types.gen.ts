@@ -42,6 +42,7 @@ export type EventPrivate = {
     demo_validation: string;
     owner_id: string;
     custom_validator: (string | null);
+    feature_flags_csv: string;
     deleted_at?: (string | null);
 };
 
