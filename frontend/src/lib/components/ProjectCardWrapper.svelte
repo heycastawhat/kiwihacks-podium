@@ -4,6 +4,7 @@
   import type { EventPrivate, EventPublic, ProjectPrivate } from "$lib/client/types.gen";
   import { validateProject } from "$lib/validation";
   import { customInvalidateAll } from "$lib/misc";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     project: ProjectPrivate;
@@ -55,6 +56,16 @@
       revalidating = false;
     }
   }
+
+  async function copyJoinCode() {
+    try {
+      await navigator.clipboard.writeText(project.join_code);
+      toast.success("Join code copied");
+    } catch (err) {
+      console.error("Failed to copy join code", err);
+      toast.error("Could not copy join code");
+    }
+  }
 </script>
 
 <div class="h-full rounded-[28px] border-2 border-dashed border-base-content/35 bg-base-100/85 p-4 shadow-sm">
@@ -93,7 +104,14 @@
 
       <div>
         <p class="text-[10px] uppercase tracking-wide text-base-content/55">Join Code</p>
-        <span class="badge badge-sm badge-outline mt-1 font-mono">{project.join_code}</span>
+        <button
+          type="button"
+          class="badge badge-sm badge-outline mt-1 font-mono cursor-copy"
+          onclick={copyJoinCode}
+          title="Click to copy join code"
+        >
+          {project.join_code}
+        </button>
       </div>
 
       <div>
