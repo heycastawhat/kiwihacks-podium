@@ -223,26 +223,27 @@
 </div>
 
 <Modal bind:this={guidelinesModal} title="Demo Guidelines">
-  <p class="py-4">
-    You should probably check that... Your repo doesn't 404 Your demo link
-    doesn't 404 Your demo link isn't a video unless it really really has to be a
-    video. Reasons to be a video:
-  </p>
-  <ul>
-    <li>You build a website ❌ nope! you gotta host it</li>
-    <li>You built a server and can't host it ❌ nope! you gotta host it</li>
-    <li>
-      You build something that relies on AI ❌ nope! you still gotta host it
-      (see a pattern?)
-    </li>
-    <li>
-      You built a discord bot ⚠️ maybe if it's a really good video, but you
-      still have to host it and include a discord bot install link
-    </li>
-    <li>
-      You built a physical robot ✅ this is a good reason for a video, but your
-      repo should also include some pics and all the parts & code should be
-      open-source
-    </li>
-  </ul>
+  <div class="py-4 space-y-4">
+    <p>You should probably check that:</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>Your repo doesn't 404.</li>
+      <li>Your demo link doesn't 404.</li>
+      <li>Your demo link isn't a video unless it really has to be.</li>
+    </ul>
+
+    <p>Reasons to use a video demo:</p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>You build a website: ❌ nope! you gotta host it.</li>
+      <li>You built a server and can't host it: ❌ nope! you gotta host it.</li>
+      <li>You build something that relies on AI: ❌ nope! you still gotta host it (see a pattern?).</li>
+      <li>
+        You built a discord bot: ⚠️ maybe, if it's a really good video, but you
+        still have to host it and include a discord bot install link.
+      </li>
+      <li>
+        You built a physical robot: ✅ this is a good reason for a video, but
+        your repo should include pics and all parts/code should be open-source.
+      </li>
+    </ul>
+  </div>
 </Modal>

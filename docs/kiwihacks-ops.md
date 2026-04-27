@@ -5,7 +5,7 @@ This file is the fast handoff for maintainers and future agents.
 ## Environments
 
 - Frontend: Vercel project `kiwihacks-podium` (root dir: `frontend/`)
-- Backend: Nest host (SSH user `jpalmer`), repo path `/root/podium`
+- Backend: self-hosted Docker deployment (SSH + `docker compose`)
 - Public app URL: `https://vote.kiwihacks.org`
 
 ## Required Backend Env Vars
@@ -36,15 +36,15 @@ If these do not match, the event will not appear as expected.
 ## Deploy Frontend
 
 ```bash
-cd /Users/josh/podium/frontend
+cd frontend
 vercel --prod --yes
 ```
 
 ## Deploy Backend (Nest)
 
 ```bash
-ssh -o StrictHostKeyChecking=accept-new jpalmer@<nest-host>
-cd /root/podium
+ssh -o StrictHostKeyChecking=accept-new <ssh-user>@<backend-host>
+cd <repo-path-on-server>
 docker compose up -d --build podium-backend
 ```
 
@@ -59,8 +59,8 @@ Expected: HTTP `200`.
 ## Make User Superadmin
 
 ```bash
-ssh -o StrictHostKeyChecking=accept-new jpalmer@<nest-host>
-cd /root/podium
+ssh -o StrictHostKeyChecking=accept-new <ssh-user>@<backend-host>
+cd <repo-path-on-server>
 docker compose exec -T podium-backend python - <<'PY'
 import asyncio
 from sqlmodel import select
@@ -89,9 +89,3 @@ PY
 - `502` from backend domain: backend container down or reverse-proxy route issue.
 - Magic link says sent but no email arrives: missing `PODIUM_LOOPS_API_KEY` or wrong `PODIUM_LOOPS_TRANSACTIONAL_ID`.
 - OAuth button present but fails: missing `PODIUM_SSO_CLIENT_ID/SECRET` or callback URL mismatch.
-
-## Git Remote
-
-Preferred fork remote for this project:
-
-- `https://github.com/heycastawhat/kiwihacks-podium.git`
