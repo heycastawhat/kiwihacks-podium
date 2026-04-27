@@ -85,7 +85,7 @@
       {/if}
     </div>
 
-    <div class="grid grid-cols-3 gap-2 rounded-2xl border border-base-content/20 bg-base-100/70 p-2 text-center">
+    <div class="grid grid-cols-1 gap-2 rounded-2xl border border-base-content/20 bg-base-100/70 p-2 text-center sm:grid-cols-3">
       <div>
         <p class="text-[10px] uppercase tracking-wide text-base-content/55">Status</p>
         {#if revalidating}
@@ -161,7 +161,7 @@
         <p class="mt-2 text-xs text-base-content/60">{credits}</p>
       </div>
 
-      <div class="mt-4 grid grid-cols-3 gap-2">
+      <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <a
           href={project.repo}
           target="_blank"

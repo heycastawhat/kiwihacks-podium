@@ -335,10 +335,10 @@
     </div>
 
     <div class="space-y-3">
-      <a href="/projects" class="btn btn-primary btn-lg btn-wide">
+      <a href="/projects" class="btn btn-primary btn-lg btn-block sm:btn-wide">
         View / Edit Your Projects
       </a>
-      <a href="/events/{currentEvent.slug}" class="btn btn-outline btn-lg btn-wide">
+      <a href="/events/{currentEvent.slug}" class="btn btn-outline btn-lg btn-block sm:btn-wide">
         Events (Voting/Galleries)
       </a>
       {#if hasExistingProject()}
@@ -360,10 +360,10 @@
       {#if currentStep === "chooseProject"}
         <!-- Choose Project Action Step -->
         <div class="text-center py-8">
-          <h1 class="text-4xl font-bold text-primary mb-4">
+          <h1 class="text-3xl sm:text-4xl font-bold text-primary mb-4">
             Welcome to Podium!
           </h1>
-          <h2 class="text-lg text-base-content mb-6 px-8">
+          <h2 class="text-lg text-base-content mb-6 px-1 sm:px-8">
             {#if welcomeMessage}
               {welcomeMessage}
               <span class="underline">{currentEvent.name}</span>.
@@ -513,7 +513,7 @@
 
             <div class="space-y-3">
               <button
-                class="btn btn-primary btn-lg btn-wide"
+                class="btn btn-primary btn-lg btn-block sm:btn-wide"
                 onclick={() => updateProjectModal?.openModal()}
               >
                 Edit Your Project

@@ -5,11 +5,11 @@
   let { data }: { data: PageData } = $props();
 </script>
 
-<div class="mx-auto max-w-7xl space-y-5">
-  <h1 class="text-5xl font-black tracking-tight text-base-content">Your Projects</h1>
+<div class="mx-auto max-w-7xl space-y-5 px-1 sm:px-0">
+  <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-base-content">Your Projects</h1>
 
   {#if data.projects.length > 0}
-    <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3 md:gap-5">
+    <div class="grid grid-cols-1 items-start justify-items-center gap-4 md:grid-cols-2 md:justify-items-start xl:grid-cols-3 md:gap-5">
       {#each data.projects as project (project.id)}
         <div class="w-full max-w-[360px]">
           <ProjectCardWrapper
