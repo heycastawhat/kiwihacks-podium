@@ -8,12 +8,16 @@
     EventPrivate,
     VoteResponse,
     ReferralResponse,
+    VoteAuditResponse,
+    VoteSuspicionResponse,
   } from "$lib/client/types.gen";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import AttendeesTable from "./AttendeesTable.svelte";
   import AdminLeaderboard from "./AdminLeaderboard.svelte";
   import StageTimeline from "./StageTimeline.svelte";
   import VotesTable from "./VotesTable.svelte";
+  import VoteAuditTable from "./VoteAuditTable.svelte";
+  import VoteSuspicionTable from "./VoteSuspicionTable.svelte";
   import ReferralsTable from "./ReferralsTable.svelte";
   import { handleError, returnLoadingText } from "$lib/misc";
   import { getAuthenticatedUser } from "$lib/user.svelte";
@@ -29,6 +33,8 @@
   let attendees = $state<UserAttendee[]>([]);
   let adminLeaderboard = $state<ProjectPrivate[]>([]);
   let votes = $state<VoteResponse[]>([]);
+  let voteAudit = $state<VoteAuditResponse[]>([]);
+  let voteSuspicion = $state<VoteSuspicionResponse[]>([]);
   let referrals = $state<ReferralResponse[]>([]);
   let loading = $state(false);
 
@@ -46,7 +52,14 @@
   async function loadAdminData() {
     loading = true;
     try {
-      const [attendeesResult, leaderboardResult, votesResult, referralsResult] =
+      const [
+        attendeesResult,
+        leaderboardResult,
+        votesResult,
+        voteAuditResult,
+        voteSuspicionResult,
+        referralsResult,
+      ] =
         await Promise.all([
           EventsService.getEventAttendeesEventsAdminEventIdAttendeesGet({
             path: { event_id: event.id },
@@ -57,6 +70,14 @@
             throwOnError: false,
           }),
           EventsService.getEventVotesEventsAdminEventIdVotesGet({
+            path: { event_id: event.id },
+            throwOnError: false,
+          }),
+          EventsService.getEventVoteAuditEventsAdminEventIdVoteAuditGet({
+            path: { event_id: event.id },
+            throwOnError: false,
+          }),
+          EventsService.getEventVoteSuspicionEventsAdminEventIdVoteSuspicionGet({
             path: { event_id: event.id },
             throwOnError: false,
           }),
@@ -74,6 +95,12 @@
 
       if (votesResult.error) handleError(votesResult.error);
       else votes = votesResult.data || [];
+
+      if (voteAuditResult.error) handleError(voteAuditResult.error);
+      else voteAudit = voteAuditResult.data || [];
+
+      if (voteSuspicionResult.error) handleError(voteSuspicionResult.error);
+      else voteSuspicion = voteSuspicionResult.data || [];
 
       if (referralsResult.error) handleError(referralsResult.error);
       else referrals = referralsResult.data || [];
@@ -162,6 +189,10 @@
 
       <!-- Votes Table -->
       <VotesTable {votes} {userLookup} {projectLookup} />
+
+      <VoteSuspicionTable findings={voteSuspicion} {userLookup} />
+
+      <VoteAuditTable logs={voteAudit} {userLookup} {projectLookup} />
 
       <!-- Referrals Table -->
       <ReferralsTable {referrals} {userLookup} />

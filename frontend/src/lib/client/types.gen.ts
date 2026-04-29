@@ -10,6 +10,10 @@ export type Body_remove_attendee_events_admin__event_id__remove_attendee_post = 
     user_id: string;
 };
 
+export type Body_transfer_project_owner_projects__project_id__transfer_owner_post = {
+    new_owner_id: string;
+};
+
 export type CreateVotes = {
     projects: Array<(string)>;
     event: string;
@@ -125,6 +129,7 @@ export type ProjectPrivate = {
     owner_display_name?: string;
     collaborator_display_names?: Array<(string)>;
     join_code: string;
+    collaborator_ids?: Array<(string)>;
     hours_spent: number;
     event_id: string;
     validation_status: string;
@@ -190,6 +195,12 @@ export type TestEventCreate = {
     description?: string;
 };
 
+export type UserAccessUpdate = {
+    is_superadmin?: (boolean | null);
+    is_admin?: (boolean | null);
+    admin_permissions_csv?: (string | null);
+};
+
 export type UserAttendee = {
     id: string;
     email: string;
@@ -225,7 +236,7 @@ export type UserPrivate = {
     has_ysws_pii?: boolean;
     is_superadmin?: boolean;
     is_admin?: boolean;
-    admin_permissions?: Array<string>;
+    admin_permissions?: Array<(string)>;
 };
 
 /**
@@ -298,12 +309,123 @@ export type ValidationResult = {
     message: string;
 };
 
+export type VoteAuditResponse = {
+    id: string;
+    event_id: string;
+    project_id: string;
+    voter_id: string;
+    actor_id: string;
+    vote_id?: (string | null);
+    action: string;
+    ip_address: string;
+    user_agent: string;
+    reason: string;
+    created_at: string;
+};
+
 export type VoteResponse = {
     id: string;
     voter_id: string;
     project_id: string;
     event_id: string;
+    created_at?: (string | null);
+    ip_address?: string;
+    user_agent?: string;
 };
+
+export type VoteSuspicionResponse = {
+    kind: string;
+    message: string;
+    voter_id?: (string | null);
+    ip_address?: string;
+    count?: number;
+};
+
+export type ListAllEventsAdminEventsGetData = {
+    query?: {
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Page size
+         */
+        size?: number;
+    };
+};
+
+export type ListAllEventsAdminEventsGetResponse = (Page_EventPrivate_);
+
+export type ListAllEventsAdminEventsGetError = (HTTPValidationError);
+
+export type CreateEventAdminEventsPostData = {
+    body: EventCreate;
+};
+
+export type CreateEventAdminEventsPostResponse = (EventPrivate);
+
+export type CreateEventAdminEventsPostError = (HTTPValidationError);
+
+export type GetEventAdminEventsEventIdGetData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type GetEventAdminEventsEventIdGetResponse = (EventPrivate);
+
+export type GetEventAdminEventsEventIdGetError = (HTTPValidationError);
+
+export type UpdateEventAdminEventsEventIdPatchData = {
+    body: EventUpdate;
+    path: {
+        event_id: string;
+    };
+};
+
+export type UpdateEventAdminEventsEventIdPatchResponse = (EventPrivate);
+
+export type UpdateEventAdminEventsEventIdPatchError = (HTTPValidationError);
+
+export type SoftDeleteEventAdminEventsEventIdDeleteData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type SoftDeleteEventAdminEventsEventIdDeleteResponse = (unknown);
+
+export type SoftDeleteEventAdminEventsEventIdDeleteError = (HTTPValidationError);
+
+export type GetEventProjectsAdminEventsEventIdProjectsGetData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type GetEventProjectsAdminEventsEventIdProjectsGetResponse = (Array<ProjectPrivate>);
+
+export type GetEventProjectsAdminEventsEventIdProjectsGetError = (HTTPValidationError);
+
+export type ExportProjectsCsvAdminEventsEventIdProjectsCsvGetData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type ExportProjectsCsvAdminEventsEventIdProjectsCsvGetResponse = (unknown);
+
+export type ExportProjectsCsvAdminEventsEventIdProjectsCsvGetError = (HTTPValidationError);
+
+export type DeleteProjectAdminProjectsProjectIdDeleteData = {
+    path: {
+        project_id: string;
+    };
+};
+
+export type DeleteProjectAdminProjectsProjectIdDeleteResponse = (unknown);
+
+export type DeleteProjectAdminProjectsProjectIdDeleteError = (HTTPValidationError);
 
 export type RequestLoginRequestLoginPostData = {
     body: UserLoginPayload;
@@ -477,6 +599,26 @@ export type GetEventVotesEventsAdminEventIdVotesGetResponse = (Array<VoteRespons
 
 export type GetEventVotesEventsAdminEventIdVotesGetError = (HTTPValidationError);
 
+export type GetEventVoteAuditEventsAdminEventIdVoteAuditGetData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type GetEventVoteAuditEventsAdminEventIdVoteAuditGetResponse = (Array<VoteAuditResponse>);
+
+export type GetEventVoteAuditEventsAdminEventIdVoteAuditGetError = (HTTPValidationError);
+
+export type GetEventVoteSuspicionEventsAdminEventIdVoteSuspicionGetData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type GetEventVoteSuspicionEventsAdminEventIdVoteSuspicionGetResponse = (Array<VoteSuspicionResponse>);
+
+export type GetEventVoteSuspicionEventsAdminEventIdVoteSuspicionGetError = (HTTPValidationError);
+
 export type GetEventReferralsEventsAdminEventIdReferralsGetData = {
     path: {
         event_id: string;
@@ -511,6 +653,28 @@ export type JoinProjectProjectsJoinPostData = {
 export type JoinProjectProjectsJoinPostResponse = (unknown);
 
 export type JoinProjectProjectsJoinPostError = (HTTPValidationError);
+
+export type RemoveProjectCollaboratorProjectsProjectIdCollaboratorsUserIdDeleteData = {
+    path: {
+        project_id: string;
+        user_id: string;
+    };
+};
+
+export type RemoveProjectCollaboratorProjectsProjectIdCollaboratorsUserIdDeleteResponse = (unknown);
+
+export type RemoveProjectCollaboratorProjectsProjectIdCollaboratorsUserIdDeleteError = (HTTPValidationError);
+
+export type TransferProjectOwnerProjectsProjectIdTransferOwnerPostData = {
+    body: Body_transfer_project_owner_projects__project_id__transfer_owner_post;
+    path: {
+        project_id: string;
+    };
+};
+
+export type TransferProjectOwnerProjectsProjectIdTransferOwnerPostResponse = (unknown);
+
+export type TransferProjectOwnerProjectsProjectIdTransferOwnerPostError = (HTTPValidationError);
 
 export type UpdateProjectProjectsProjectIdPutData = {
     body: ProjectUpdate;
@@ -618,6 +782,27 @@ export type ListUsersSuperadminUsersGetData = {
 export type ListUsersSuperadminUsersGetResponse = (Page_UserSummary_);
 
 export type ListUsersSuperadminUsersGetError = (HTTPValidationError);
+
+export type UpdateUserAccessSuperadminUsersUserIdAccessPatchData = {
+    body: UserAccessUpdate;
+    path: {
+        user_id: string;
+    };
+};
+
+export type UpdateUserAccessSuperadminUsersUserIdAccessPatchResponse = (UserSummary);
+
+export type UpdateUserAccessSuperadminUsersUserIdAccessPatchError = (HTTPValidationError);
+
+export type ExportProjectsCsvSuperadminEventsEventIdProjectsCsvGetData = {
+    path: {
+        event_id: string;
+    };
+};
+
+export type ExportProjectsCsvSuperadminEventsEventIdProjectsCsvGetResponse = (unknown);
+
+export type ExportProjectsCsvSuperadminEventsEventIdProjectsCsvGetError = (HTTPValidationError);
 
 export type UserExistsUsersExistsGetData = {
     query: {

@@ -5,6 +5,8 @@
   import { validateProject } from "$lib/validation";
   import { customInvalidateAll } from "$lib/misc";
   import { toast } from "svelte-sonner";
+  import { client } from "$lib/client/sdk.gen";
+  import { getAuthenticatedUser } from "$lib/user.svelte";
 
   interface Props {
     project: ProjectPrivate;
@@ -18,6 +20,7 @@
   let revalidating = $state(false);
   let imageReady = $state(false);
   let imageFailed = $state(false);
+  let teamBusy = $state(false);
 
   const eventForProject = $derived(
     events.find((event) => event.id === project.event_id)
@@ -37,6 +40,20 @@
     });
     return formatter.format(allNames);
   });
+
+  const collaboratorEntries = $derived.by(() => {
+    const ids = project.collaborator_ids ?? [];
+    const names = project.collaborator_display_names ?? [];
+    return ids.map((id, index) => ({
+      id,
+      name: names[index] || id,
+    }));
+  });
+
+  const isOwner = $derived(project.owner_id === getAuthenticatedUser().user.id);
+  const currentCollaborator = $derived(
+    collaboratorEntries.find((collaborator) => collaborator.id === getAuthenticatedUser().user.id)
+  );
 
   const statusBadge = $derived(
     project.validation_status === "valid"
@@ -64,6 +81,53 @@
     } catch (err) {
       console.error("Failed to copy join code", err);
       toast.error("Could not copy join code");
+    }
+  }
+
+  async function copyInviteLink() {
+    const path = `/projects/join?join_code=${encodeURIComponent(project.join_code)}`;
+    const inviteUrl = new URL(path, window.location.origin).toString();
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success("Invite link copied");
+    } catch (err) {
+      console.error("Failed to copy invite link", err);
+      toast.error("Could not copy invite link");
+    }
+  }
+
+  async function removeCollaborator(userId: string) {
+    teamBusy = true;
+    try {
+      const { error } = await client.delete({
+        url: `/projects/${project.id}/collaborators/${userId}`,
+      });
+      if (error) {
+        toast.error(typeof error === "string" ? error : "Could not update team");
+        return;
+      }
+      toast.success(userId === getAuthenticatedUser().user.id ? "Left project" : "Collaborator removed");
+      await customInvalidateAll();
+    } finally {
+      teamBusy = false;
+    }
+  }
+
+  async function transferOwner(userId: string) {
+    teamBusy = true;
+    try {
+      const { error } = await client.post({
+        url: `/projects/${project.id}/transfer-owner`,
+        body: { new_owner_id: userId },
+      });
+      if (error) {
+        toast.error(typeof error === "string" ? error : "Could not transfer owner");
+        return;
+      }
+      toast.success("Owner transferred");
+      await customInvalidateAll();
+    } finally {
+      teamBusy = false;
     }
   }
 </script>
@@ -104,14 +168,24 @@
 
       <div>
         <p class="text-[10px] uppercase tracking-wide text-base-content/55">Join Code</p>
-        <button
-          type="button"
-          class="badge badge-sm badge-outline mt-1 font-mono cursor-copy"
-          onclick={copyJoinCode}
-          title="Click to copy join code"
-        >
-          {project.join_code}
-        </button>
+        <div class="mt-1 flex flex-wrap justify-center gap-1">
+          <button
+            type="button"
+            class="badge badge-sm badge-outline font-mono cursor-copy"
+            onclick={copyJoinCode}
+            title="Click to copy join code"
+          >
+            {project.join_code}
+          </button>
+          <button
+            type="button"
+            class="badge badge-sm badge-outline cursor-copy"
+            onclick={copyInviteLink}
+            title="Copy invite link"
+          >
+            Invite
+          </button>
+        </div>
       </div>
 
       <div>
@@ -188,6 +262,43 @@
           Edit
         </button>
       </div>
+
+      {#if isOwner || currentCollaborator}
+        <div class="mt-4 rounded-xl border border-base-content/15 bg-base-100/70 p-3 text-left">
+          <p class="text-xs font-semibold uppercase tracking-wide text-base-content/55">Team</p>
+          {#if collaboratorEntries.length === 0}
+            <p class="mt-2 text-sm text-base-content/60">No collaborators yet.</p>
+          {:else}
+            <div class="mt-2 space-y-2">
+              {#each collaboratorEntries as collaborator}
+                <div class="flex items-center justify-between gap-2">
+                  <span class="min-w-0 truncate text-sm">{collaborator.name}</span>
+                  <div class="flex shrink-0 gap-1">
+                    {#if isOwner}
+                      <button
+                        class="btn btn-xs btn-outline"
+                        onclick={() => transferOwner(collaborator.id)}
+                        disabled={teamBusy}
+                      >
+                        Make owner
+                      </button>
+                    {/if}
+                    {#if isOwner || collaborator.id === currentCollaborator?.id}
+                      <button
+                        class="btn btn-xs btn-error btn-outline"
+                        onclick={() => removeCollaborator(collaborator.id)}
+                        disabled={teamBusy}
+                      >
+                        {collaborator.id === currentCollaborator?.id ? "Leave" : "Remove"}
+                      </button>
+                    {/if}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
+      {/if}
     </div>
   </div>
 </div>

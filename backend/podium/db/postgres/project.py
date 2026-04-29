@@ -63,6 +63,12 @@ class Project(SQLModel, table=True):
         """Collaborator display names — requires selectinload(Project.collaborators)."""
         return [c.display_name for c in (self.collaborators or [])]
 
+    @computed_field
+    @property
+    def collaborator_ids(self) -> list[UUID]:
+        """Collaborator IDs — requires selectinload(Project.collaborators)."""
+        return [c.id for c in (self.collaborators or [])]
+
     # Foreign keys
     owner_id: UUID = Field(foreign_key="users.id")
     event_id: UUID = Field(foreign_key="events.id")
@@ -101,6 +107,7 @@ class ProjectPrivate(ProjectPublic):
     """Private project info - visible to owner and collaborators."""
 
     join_code: str
+    collaborator_ids: list[UUID] = []
     hours_spent: int
     event_id: UUID
     validation_status: str

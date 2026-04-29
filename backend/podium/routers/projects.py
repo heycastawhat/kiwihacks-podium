@@ -2,7 +2,7 @@ from secrets import token_urlsafe
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Request
 from sqlalchemy import func
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -16,15 +16,18 @@ from podium.db.postgres import (
     ProjectPrivate,
     ProjectCreate,
     ProjectUpdate,
+    Vote,
+    VoteAuditLog,
     get_session,
     get_ro_session,
     scalar_one_or_none,
+    scalar_all,
 )
 from podium.db.postgres.base import async_session_factory
 from podium.authz import has_admin_permission
-from podium.db.postgres.user import has_ysws_pii
 from podium.routers.auth import get_current_user
 from podium.limiter import limiter
+from podium.cache import cache_delete
 from podium.validators import itch, github, CUSTOM_VALIDATORS
 from podium.validators.base import ValidationResult
 from podium.constants import (
@@ -161,9 +164,6 @@ async def create_project(
     if user not in event.attendees:
         raise HTTPException(status_code=403, detail="Owner not part of event")
 
-    if event.require_ysws_pii and not has_ysws_pii(user):
-        raise HTTPException(status_code=400, detail="This event requires your address and date of birth on your profile before you can submit a project")
-
     while True:
         join_code = token_urlsafe(3).upper()
         code_exists = await scalar_one_or_none(
@@ -220,6 +220,98 @@ async def join_project(
     project.collaborators.append(user)
     await session.commit()
     return {"message": "Successfully joined project"}
+
+
+@router.delete("/{project_id}/collaborators/{user_id}")
+async def remove_project_collaborator(
+    project_id: Annotated[UUID, Path(title="Project ID")],
+    user_id: Annotated[UUID, Path(title="Collaborator user ID")],
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+):
+    """Remove a collaborator from a project. Owners can remove anyone; collaborators can leave."""
+    project = await scalar_one_or_none(
+        session,
+        select(Project)
+        .where(Project.id == project_id)
+        .options(selectinload(Project.collaborators)),
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    can_remove = project.owner_id == user.id or user_id == user.id
+    if not can_remove:
+        raise BAD_ACCESS
+
+    if user_id == project.owner_id:
+        raise HTTPException(status_code=400, detail="Project owner cannot be removed")
+
+    original_count = len(project.collaborators)
+    project.collaborators = [c for c in project.collaborators if c.id != user_id]
+    if len(project.collaborators) == original_count:
+        raise HTTPException(status_code=404, detail="Collaborator not found")
+
+    await session.commit()
+    return {"message": "Collaborator removed"}
+
+
+@router.post("/{project_id}/transfer-owner")
+async def transfer_project_owner(
+    project_id: Annotated[UUID, Path(title="Project ID")],
+    new_owner_id: Annotated[UUID, Body(embed=True)],
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+):
+    """Transfer project ownership to an existing collaborator."""
+    project = await scalar_one_or_none(
+        session,
+        select(Project)
+        .where(Project.id == project_id)
+        .options(selectinload(Project.collaborators)),
+    )
+    if not project or project.owner_id != user.id:
+        raise BAD_ACCESS
+
+    new_owner = next((c for c in project.collaborators if c.id == new_owner_id), None)
+    if not new_owner:
+        raise HTTPException(status_code=400, detail="New owner must be a collaborator")
+
+    old_owner = await session.get(User, user.id)
+    if not old_owner:
+        raise BAD_AUTH
+
+    project.collaborators = [c for c in project.collaborators if c.id != new_owner_id]
+    if old_owner not in project.collaborators:
+        project.collaborators.append(old_owner)
+    project.owner_id = new_owner_id
+
+    invalid_votes = await scalar_all(
+        session,
+        select(Vote).where(
+            Vote.voter_id == new_owner_id,
+            Vote.project_id == project.id,
+            Vote.event_id == project.event_id,
+        ),
+    )
+    for vote in invalid_votes:
+        session.add(
+            VoteAuditLog(
+                voter_id=vote.voter_id,
+                actor_id=user.id,
+                project_id=vote.project_id,
+                event_id=vote.event_id,
+                vote_id=vote.id,
+                action="delete",
+                ip_address=vote.ip_address,
+                user_agent=vote.user_agent,
+                reason="owner_transfer",
+            )
+        )
+        await session.delete(vote)
+
+    await session.commit()
+    await cache_delete(f"leaderboard:{project.event_id}")
+    return {"message": "Project owner transferred"}
 
 
 @router.put("/{project_id}")

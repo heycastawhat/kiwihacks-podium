@@ -3,7 +3,7 @@ from secrets import token_urlsafe
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from pydantic import BaseModel
 from slugify import slugify
 from sqlmodel import select
@@ -19,6 +19,7 @@ from podium.db.postgres import (
     Project,
     ProjectPublic,
     Vote,
+    VoteAuditLog,
     get_session,
     get_ro_session,
     scalar_one_or_none,
@@ -38,6 +39,15 @@ class UserEvents(BaseModel):
 class CreateVotes(BaseModel):
     projects: list[UUID]
     event: UUID
+
+
+def request_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip()[:255]
+    if request.client:
+        return request.client.host[:255]
+    return ""
 
 
 @router.get("/official")
@@ -130,6 +140,7 @@ async def attend_event(
 
 @router.post("/vote")
 async def vote(
+    request: Request,
     votes: CreateVotes,
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -196,7 +207,26 @@ async def vote(
                 status_code=403, detail="User cannot vote for their own project"
             )
 
-        session.add(Vote(voter_id=user.id, project_id=project_id, event_id=event.id))
+        vote = Vote(
+            voter_id=user.id,
+            project_id=project_id,
+            event_id=event.id,
+            ip_address=request_ip(request),
+            user_agent=request.headers.get("user-agent", "")[:500],
+        )
+        session.add(vote)
+        session.add(
+            VoteAuditLog(
+                voter_id=user.id,
+                actor_id=user.id,
+                project_id=project_id,
+                event_id=event.id,
+                vote_id=vote.id,
+                action="create",
+                ip_address=vote.ip_address,
+                user_agent=vote.user_agent,
+            )
+        )
 
     await session.commit()
     # Invalidate cached leaderboard so next request reflects the new votes

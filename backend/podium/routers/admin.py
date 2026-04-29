@@ -5,6 +5,7 @@ Organizers can view event details, attendees, votes, referrals, and the leaderbo
 and can remove attendees.
 """
 
+from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -12,6 +13,7 @@ from fastapi import APIRouter, Body, Depends, Path
 from pydantic import BaseModel
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy import func
 from sqlalchemy.orm import selectinload, Load
 
 from podium.db.postgres import (
@@ -22,6 +24,7 @@ from podium.db.postgres import (
     Project,
     ProjectPrivate,
     Vote,
+    VoteAuditLog,
     Referral,
     get_session,
     scalar_one_or_none,
@@ -46,6 +49,31 @@ class VoteResponse(BaseModel):
     voter_id: UUID
     project_id: UUID
     event_id: UUID
+    created_at: datetime | None = None
+    ip_address: str = ""
+    user_agent: str = ""
+
+
+class VoteAuditResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    project_id: UUID
+    voter_id: UUID
+    actor_id: UUID
+    vote_id: UUID | None = None
+    action: str
+    ip_address: str
+    user_agent: str
+    reason: str
+    created_at: datetime
+
+
+class VoteSuspicionResponse(BaseModel):
+    kind: str
+    message: str
+    voter_id: UUID | None = None
+    ip_address: str = ""
+    count: int = 0
 
 
 class ReferralResponse(BaseModel):
@@ -170,9 +198,116 @@ async def get_event_votes(
     await get_owned_event(event_id, user, session)
     votes = await scalar_all(session, select(Vote).where(Vote.event_id == event_id))
     return [
-        VoteResponse(id=v.id, voter_id=v.voter_id, project_id=v.project_id, event_id=v.event_id)
+        VoteResponse(
+            id=v.id,
+            voter_id=v.voter_id,
+            project_id=v.project_id,
+            event_id=v.event_id,
+            created_at=v.created_at,
+            ip_address=v.ip_address,
+            user_agent=v.user_agent,
+        )
         for v in votes
     ]
+
+
+@router.get("/{event_id}/vote-audit")
+async def get_event_vote_audit(
+    event_id: Annotated[UUID, Path(title="Event ID")],
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> list[VoteAuditResponse]:
+    """Get vote audit log entries for an event (admin only)."""
+    await get_owned_event(event_id, user, session)
+    logs = await scalar_all(
+        session,
+        select(VoteAuditLog)
+        .where(VoteAuditLog.event_id == event_id)
+        .order_by(VoteAuditLog.created_at.desc()),
+    )
+    return [
+        VoteAuditResponse(
+            id=log.id,
+            event_id=log.event_id,
+            project_id=log.project_id,
+            voter_id=log.voter_id,
+            actor_id=log.actor_id,
+            vote_id=log.vote_id,
+            action=log.action,
+            ip_address=log.ip_address,
+            user_agent=log.user_agent,
+            reason=log.reason,
+            created_at=log.created_at,
+        )
+        for log in logs
+    ]
+
+
+@router.get("/{event_id}/vote-suspicion")
+async def get_event_vote_suspicion(
+    event_id: Annotated[UUID, Path(title="Event ID")],
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> list[VoteSuspicionResponse]:
+    """Return lightweight anti-abuse signals for admin review."""
+    event = await get_owned_event(event_id, user, session)
+    findings: list[VoteSuspicionResponse] = []
+
+    over_limit_rows = (
+        await session.exec(
+            select(Vote.voter_id, func.count(Vote.id))
+            .where(Vote.event_id == event_id)
+            .group_by(Vote.voter_id)
+            .having(func.count(Vote.id) > event.max_votes_per_user)
+        )
+    ).all()
+    for voter_id, count in over_limit_rows:
+        findings.append(
+            VoteSuspicionResponse(
+                kind="over_limit",
+                voter_id=voter_id,
+                count=count,
+                message=f"Voter has {count} votes; event allows {event.max_votes_per_user}.",
+            )
+        )
+
+    shared_ip_rows = (
+        await session.exec(
+            select(Vote.ip_address, func.count(func.distinct(Vote.voter_id)))
+            .where(Vote.event_id == event_id, Vote.ip_address != "")
+            .group_by(Vote.ip_address)
+            .having(func.count(func.distinct(Vote.voter_id)) >= 4)
+        )
+    ).all()
+    for ip_address, count in shared_ip_rows:
+        findings.append(
+            VoteSuspicionResponse(
+                kind="shared_ip",
+                ip_address=ip_address,
+                count=count,
+                message=f"{count} voters used this IP address.",
+            )
+        )
+
+    burst_rows = (
+        await session.exec(
+            select(Vote.voter_id, func.count(Vote.id))
+            .where(Vote.event_id == event_id)
+            .group_by(Vote.voter_id, func.date_trunc("minute", Vote.created_at))
+            .having(func.count(Vote.id) >= 3)
+        )
+    ).all()
+    for voter_id, count in burst_rows:
+        findings.append(
+            VoteSuspicionResponse(
+                kind="vote_burst",
+                voter_id=voter_id,
+                count=count,
+                message=f"Voter cast {count} votes in one minute.",
+            )
+        )
+
+    return findings
 
 
 @router.get("/{event_id}/referrals")

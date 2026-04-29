@@ -58,6 +58,10 @@
       >
     </div>
   {/if}
+  <a
+    href={`/events/${data.event.slug}/showcase`}
+    class="btn-secondary btn btn-block">Showcase</a
+  >
   {#if !data.event.owned}
     <div
       class="tooltip"

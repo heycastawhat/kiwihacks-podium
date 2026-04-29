@@ -27,6 +27,7 @@ from podium.db.postgres.project import (
     ProjectUpdate,
 )
 from podium.db.postgres.vote import Vote
+from podium.db.postgres.vote_audit import VoteAuditLog
 from podium.db.postgres.referral import Referral
 
 __all__ = [
@@ -62,5 +63,6 @@ __all__ = [
     "ProjectUpdate",
     # Vote & Referral
     "Vote",
+    "VoteAuditLog",
     "Referral",
 ]
