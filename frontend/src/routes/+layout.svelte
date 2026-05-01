@@ -4,10 +4,9 @@
   import { navigating, page } from "$app/state";
   let { children } = $props();
   import { onMount, onDestroy } from "svelte";
-  import { themeChange } from "theme-change";
   import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { setSystemTheme, returnLoadingText } from "$lib/misc";
+  import { applyStoredTheme, returnLoadingText } from "$lib/misc";
   import { env } from "$env/dynamic/public";
   import MaintenanceMode from "$lib/components/MaintenanceMode.svelte";
 
@@ -118,8 +117,7 @@
 
   onMount(() => {
     console.debug("Page data:", page.data);
-    themeChange(false);
-    setSystemTheme();
+    applyStoredTheme();
     window.addEventListener("click", handleSettingsOutsideClick);
     window.addEventListener("keydown", handleSettingsEscape);
 

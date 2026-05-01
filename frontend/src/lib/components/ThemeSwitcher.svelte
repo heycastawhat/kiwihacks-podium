@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { lightTheme, themes } from "$lib/consts";
-  import { setSystemTheme } from "$lib/misc";
+  import { setManualTheme, setSystemTheme } from "$lib/misc";
 
   let {
     buttonClass = "btn m-1",
@@ -22,7 +22,8 @@
   function syncThemeState() {
     if (typeof document === "undefined") return;
     const storedTheme = localStorage.getItem("theme");
-    usingSystemTheme = !storedTheme;
+    usingSystemTheme =
+      !storedTheme && localStorage.getItem("theme-mode") === "system";
     currentTheme =
       document.documentElement.getAttribute("data-theme") ||
       storedTheme ||
@@ -30,14 +31,12 @@
   }
 
   function handleSystemThemeChange() {
-    localStorage.removeItem("theme");
     setSystemTheme();
     queueMicrotask(syncThemeState);
   }
 
   function handleThemeInputChange(theme: string) {
-    localStorage.setItem("theme", theme);
-    document.documentElement.setAttribute("data-theme", theme);
+    setManualTheme(theme);
     syncThemeState();
   }
 

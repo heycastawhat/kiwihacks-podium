@@ -4,6 +4,8 @@ import { lightTheme, darkTheme, loadingTextOptions } from "$lib/consts";
 import { invalidate, invalidateAll } from "$app/navigation";
 import { getAuthenticatedUser, validateToken } from "./user.svelte";
 
+const themeModeStorageKey = "theme-mode";
+
 type ErrorWithDetail = {
   detail: string;
 };
@@ -44,16 +46,37 @@ export function handleError(
   }
 }
 
-export function setSystemTheme() {
-  // If the user has set a theme preference, don't override it
-  if (localStorage.theme) {
-    return;
-  }
+function applySystemTheme() {
   if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
     document.documentElement.setAttribute("data-theme", darkTheme);
-  } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+  } else {
     document.documentElement.setAttribute("data-theme", lightTheme);
   }
+}
+
+export function applyStoredTheme() {
+  const storedTheme = localStorage.getItem("theme");
+  if (storedTheme) {
+    document.documentElement.setAttribute("data-theme", storedTheme);
+    return;
+  }
+  if (localStorage.getItem(themeModeStorageKey) === "system") {
+    applySystemTheme();
+    return;
+  }
+  document.documentElement.setAttribute("data-theme", lightTheme);
+}
+
+export function setSystemTheme() {
+  localStorage.setItem(themeModeStorageKey, "system");
+  localStorage.removeItem("theme");
+  applySystemTheme();
+}
+
+export function setManualTheme(theme: string) {
+  localStorage.removeItem(themeModeStorageKey);
+  localStorage.setItem("theme", theme);
+  document.documentElement.setAttribute("data-theme", theme);
 }
 
 export function returnLoadingText(): string {
