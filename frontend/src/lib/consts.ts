@@ -17,7 +17,7 @@ export const themes = [
   "catppuccin-mocha",
 ];
 export const lightTheme = "kiwihacks";
-export const darkTheme = "kiwihacks";
+export const darkTheme = "catppuccin-mocha";
 export const daisyUIThemes = createDaisyUIThemes(darkTheme, lightTheme, themes);
 
 export const loadingTextOptions = [

@@ -35,8 +35,10 @@
     queueMicrotask(syncThemeState);
   }
 
-  function handleThemeInputChange() {
-    queueMicrotask(syncThemeState);
+  function handleThemeInputChange(theme: string) {
+    localStorage.setItem("theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+    syncThemeState();
   }
 
   onMount(() => {
@@ -71,7 +73,6 @@
     tabindex="0"
     class="dropdown-content bg-base-300 rounded-box z-1 w-52 p-1 shadow-2xl overflow-auto max-h-52 mr-0"
     role="menu"
-    onchange={handleThemeInputChange}
   >
     <!-- Option to respect system theme by removing the theme from localStorage -->
     <li>
@@ -92,9 +93,8 @@
           class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
           value={theme}
           aria-label={theme}
-          data-set-theme={theme}
-          data-act-class="ACTIVECLASS"
           checked={!usingSystemTheme && currentTheme === theme}
+          onchange={() => handleThemeInputChange(theme)}
         />
       </li>
     {/each}
