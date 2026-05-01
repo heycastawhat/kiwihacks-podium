@@ -257,6 +257,37 @@
   }
 }
 
+@media (max-width: 768px) {
+  #sidebar-settings {
+    position: sticky;
+    bottom: 0;
+    background: inherit;
+  }
+
+  #sidebar-settings .sidebar-settings-popout {
+    max-height: min(64dvh, 28rem);
+    overflow-y: auto;
+  }
+
+  #sidebar-settings .sidebar-settings-heading {
+    font-size: 1.45rem;
+  }
+
+  #sidebar-settings .sidebar-settings-trigger {
+    padding: 0.8rem;
+  }
+
+  #sidebar-settings .sidebar-settings-name {
+    font-size: 1.08rem;
+  }
+
+  #sidebar-settings .sidebar-settings-pill {
+    width: 2.9rem;
+    height: 2.8rem;
+    flex: 0 0 auto;
+  }
+}
+
 @font-face {
   font-family: "Phantom Sans";
   src:

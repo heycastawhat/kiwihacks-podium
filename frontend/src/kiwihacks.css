@@ -333,7 +333,28 @@
     padding-right: 0.2rem;
   }
 
+  [data-theme="kiwihacks"] #sidebar {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+  }
+
+  [data-theme="kiwihacks"] #sidebar .drawer-overlay {
+    background-color: rgba(19, 47, 30, 0.42);
+  }
+
   [data-theme="kiwihacks"] #sidebar-ui {
     width: min(88vw, 340px);
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow-y: auto;
+    background-color: #c7e8ee;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  [data-theme="kiwihacks"] #sidebar-settings .sidebar-settings-popout,
+  [data-theme="kiwihacks"] #sidebar-settings .sidebar-settings-trigger {
+    background: rgba(255, 255, 255, 0.94);
   }
 }
