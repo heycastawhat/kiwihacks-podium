@@ -62,6 +62,7 @@ Validation strategy is configured per-event via `repo_validation` and `demo_vali
 | Setting | Frontend warning | Backend check |
 |---|---|---|
 | `github` | Regex check for valid GitHub URL | GitHub public API — repo must exist |
+| `git` | URL host must contain `git`, path must look like a repo | Shape check only; accepts GitHub, GitLab, and self-hosted git domains |
 | `itch` | Regex check for valid itch.io URL | Scrapes itch.io for `.game_frame` (browser-playable) |
 | `custom` | None | Calls the named module from `validators/custom/REGISTRY` |
 | `none` | None | Skipped |

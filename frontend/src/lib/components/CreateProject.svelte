@@ -6,7 +6,7 @@
   import { customInvalidateAll, handleError, withHttpsIfMissing } from "$lib/misc";
   import { asyncClick } from "$lib/actions/asyncClick";
   import Modal from "$lib/components/Modal.svelte";
-  import { isValidItchUrl, isValidGitHubUrl } from "$lib/validation";
+  import { isValidItchUrl, isValidGitHubUrl, isValidGitUrl } from "$lib/validation";
 
   // Accept callback prop for when project is successfully created
   // Accept optional event to pre-fill and hide the event selector
@@ -37,7 +37,7 @@
   let demoLinksOptional = $derived(selectedEvent?.demo_links_optional || false);
 
   // Instant warnings driven by each event's validation config (non-blocking, user can bypass).
-  // "itch" events warn if demo isn't a valid itch.io URL; "github" events warn for repo.
+  // "itch" events warn if demo isn't a valid itch.io URL; repo settings warn for configured host shape.
   // No instant warning for "none" or "custom" (custom validation is background-only).
   let demoWarning = $derived(
     selectedEvent?.demo_validation === "itch" && project.demo?.trim() && !isValidItchUrl(project.demo)
@@ -47,6 +47,8 @@
   let repoWarning = $derived(
     (selectedEvent?.repo_validation ?? "github") === "github" && project.repo?.trim() && !isValidGitHubUrl(project.repo)
       ? "Repository should be a GitHub URL"
+      : selectedEvent?.repo_validation === "git" && project.repo?.trim() && !isValidGitUrl(project.repo)
+      ? "Repository should be a GitHub, GitLab, or git-hosted URL"
       : null
   );
 

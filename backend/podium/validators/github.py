@@ -8,6 +8,8 @@ and is accessible. No auth token required for public repos — rate limit is
 """
 
 import re
+from urllib.parse import urlparse
+
 import httpx
 
 from podium.validators.base import ValidationResult
@@ -18,6 +20,15 @@ GITHUB_URL_PATTERN = re.compile(
 )
 
 GITHUB_API = "https://api.github.com/repos/{owner}/{repo}"
+
+
+def _parse_url(url: str):
+    value = (url or "").strip()
+    if not value:
+        return urlparse("")
+    if "://" not in value:
+        value = f"https://{value}"
+    return urlparse(value)
 
 
 def _parse_owner_repo(url: str) -> tuple[str, str] | None:
@@ -31,6 +42,29 @@ def _parse_owner_repo(url: str) -> tuple[str, str] | None:
 def is_github_url(url: str) -> bool:
     """Return True if the URL matches the GitHub repo format."""
     return bool(GITHUB_URL_PATTERN.match(url))
+
+
+def is_git_url(url: str) -> bool:
+    """Return True for GitHub, GitLab, or another repo URL on a git domain."""
+    parsed = _parse_url(url)
+    host = (parsed.hostname or "").lower()
+    path_parts = [part for part in parsed.path.split("/") if part]
+    return "git" in host and len(path_parts) >= 2
+
+
+async def validate_git_url(repo_url: str) -> ValidationResult:
+    """
+    Check whether a URL looks like a repo on a git-hosted domain.
+
+    This validates shape only. Self-hosted GitLab/Gitea/Git web hosts often need
+    auth or custom API paths, so existence checks stay GitHub-specific.
+    """
+    if is_git_url(repo_url):
+        return ValidationResult(valid=True, message="")
+    return ValidationResult(
+        valid=False,
+        message="Repository URL must use a git host (e.g. github.com/owner/repo, gitlab.com/owner/repo, or another domain containing 'git').",
+    )
 
 
 async def validate(repo_url: str, timeout: float = 10.0) -> ValidationResult:

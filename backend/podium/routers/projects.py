@@ -80,6 +80,12 @@ async def _run_background_validation(project_id: UUID) -> None:
                     all_valid = False
                     if result.message:
                         messages.append(result.message)
+            elif event.repo_validation == RepoValidation.GIT and project.repo:
+                result = await github.validate_git_url(project.repo)
+                if not result.valid:
+                    all_valid = False
+                    if result.message:
+                        messages.append(result.message)
             elif event.repo_validation == RepoValidation.CUSTOM and event.custom_validator:
                 module = CUSTOM_VALIDATORS.get(event.custom_validator)
                 if module and hasattr(module, "validate_repo"):

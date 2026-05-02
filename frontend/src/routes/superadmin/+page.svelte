@@ -16,7 +16,7 @@
   };
 
   const phases = ["draft", "submission", "voting", "closed"];
-  const repoValidations = ["none", "github", "custom"];
+  const repoValidations = ["none", "github", "git", "custom"];
   const demoValidations = ["none", "itch", "custom"];
   const phaseBadge: Record<string, string> = {
     draft: "badge-ghost", submission: "badge-success", voting: "badge-warning", closed: "badge-info",

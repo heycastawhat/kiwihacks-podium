@@ -34,6 +34,7 @@ class RepoValidation(str, Enum):
 
     NONE = "none"      # no validation
     GITHUB = "github"  # check GitHub public API for repo existence
+    GIT = "git"        # accept GitHub, GitLab, or another git-hosted URL
     CUSTOM = "custom"  # use the event's named custom validator
 
 

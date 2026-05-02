@@ -16,6 +16,20 @@ export function isValidGitHubUrl(url: string): boolean {
   return regex.test(url?.trim() || "");
 }
 
+/**
+ * Git repo URL validation for GitHub, GitLab, or another host containing "git"
+ */
+export function isValidGitUrl(url: string): boolean {
+  const value = url?.trim() || "";
+  try {
+    const parsed = new URL(value.includes("://") ? value : `https://${value}`);
+    const pathParts = parsed.pathname.split("/").filter(Boolean);
+    return parsed.hostname.toLowerCase().includes("git") && pathParts.length >= 2;
+  } catch {
+    return false;
+  }
+}
+
 import type { ValidationResult } from "$lib/client/types.gen";
 export type { ValidationResult };
 
