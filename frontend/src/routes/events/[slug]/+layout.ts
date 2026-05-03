@@ -1,5 +1,5 @@
 // https://svelte.dev/docs/kit/load#Layout-data
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import type { LayoutLoad } from "./$types";
 import { client } from "$lib/client/sdk.gen";
 import { EventsService } from "$lib/client/sdk.gen";
@@ -7,7 +7,7 @@ import type { EventPublic, EventPrivate } from "$lib/client";
 import { eventSlugAliases } from "$lib/consts";
 import { getAuthenticatedUser } from "$lib/user.svelte";
 
-export const load: LayoutLoad = async ({ params, fetch, parent }) => {
+export const load: LayoutLoad = async ({ params, fetch, parent, url }) => {
   client.setConfig({ fetch });
 
   if (!params.slug) {
@@ -17,6 +17,10 @@ export const load: LayoutLoad = async ({ params, fetch, parent }) => {
   // Check for alias and replace slug if needed
   const slug =
     (eventSlugAliases as Record<string, string>)[params.slug] || params.slug;
+  if (slug !== params.slug) {
+    const nextPath = url.pathname.replace(`/events/${params.slug}`, `/events/${slug}`);
+    throw redirect(308, `${nextPath}${url.search}`);
+  }
 
   // Get parent data (user's events) if available
   const { events } = await parent();

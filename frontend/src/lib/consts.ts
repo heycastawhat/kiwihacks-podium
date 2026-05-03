@@ -48,6 +48,7 @@ export const loadingTextOptions = [
 ];
 
 export const eventSlugAliases = {
+  "kiwihacks-2026-bHyL8A": "kiwihacks26",
   rec8sacRO9Yj6edPG: "scrapyard-flagship",
 };
 

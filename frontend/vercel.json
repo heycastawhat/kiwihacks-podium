@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/events/kiwihacks-2026-bHyL8A",
+      "destination": "/events/kiwihacks26",
+      "permanent": true
+    },
+    {
+      "source": "/events/kiwihacks-2026-bHyL8A/:path*",
+      "destination": "/events/kiwihacks26/:path*",
+      "permanent": true
+    }
+  ]
+}
