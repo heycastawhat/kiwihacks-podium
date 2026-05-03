@@ -6,6 +6,7 @@ services:
   podium-pg:
     image: postgres:17
     environment:
+      TZ: Pacific/Auckland
       POSTGRES_PASSWORD: localpass
       POSTGRES_DB: podium
     ports: ["5432:5432"]
@@ -30,6 +31,7 @@ services:
       - --port
       - "8000"
     environment:
+      TZ: Pacific/Auckland
       PODIUM_DATABASE_URL: postgresql+asyncpg://postgres:localpass@podium-pg:5432/podium?sslmode=disable
       PODIUM_JWT_SECRET: ${PODIUM_JWT_SECRET:-local-dev-jwt-secret-change-me}
       PODIUM_SSO_CLIENT_ID: ${PODIUM_SSO_CLIENT_ID:-}
