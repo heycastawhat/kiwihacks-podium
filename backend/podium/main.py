@@ -7,6 +7,7 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi_pagination import add_pagination
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -72,6 +73,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+uploads_dir = Path(os.getenv("PODIUM_UPLOADS_DIR", "/app/uploads")) / "project-images"
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/project-images", StaticFiles(directory=uploads_dir), name="project-images")
 
 
 # Dynamically import all routers from the routers directory

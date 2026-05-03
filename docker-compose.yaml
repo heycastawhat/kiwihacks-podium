@@ -38,6 +38,8 @@ services:
       PODIUM_ACTIVE_EVENT_SERIES: ${PODIUM_ACTIVE_EVENT_SERIES:-flagship}
       PODIUM_REDIS_URL: ""
     ports: ["8000:8000"]
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       podium-pg: { condition: service_healthy }
     healthcheck:

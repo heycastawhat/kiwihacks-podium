@@ -7,6 +7,8 @@
   import { asyncClick } from "$lib/actions/asyncClick";
   import Modal from "$lib/components/Modal.svelte";
   import { isValidItchUrl, isValidGitHubUrl, isValidGitUrl } from "$lib/validation";
+  import { getAuthenticatedUser } from "$lib/user.svelte";
+  import { env } from "$env/dynamic/public";
 
   // Accept callback prop for when project is successfully created
   // Accept optional event to pre-fill and hide the event selector
@@ -29,6 +31,7 @@
   });
   let events: EventPublic[] = $state([]);
   let fetchedEvents = false;
+  let imageUploading = $state(false);
 
   // Track the selected event's settings
   let selectedEvent = $derived(
@@ -100,6 +103,34 @@
     }
   }
 
+  async function uploadProjectImage(file: File | undefined) {
+    if (!file) return;
+    imageUploading = true;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(`${env.PUBLIC_API_URL}/projects/image-upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getAuthenticatedUser().access_token}`,
+        },
+        body: formData,
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        toast.error(body?.detail || "Image upload failed");
+        return;
+      }
+      project.image_url = body.url;
+      toast.success("Image uploaded");
+    } catch {
+      toast.error("Image upload failed");
+    } finally {
+      imageUploading = false;
+    }
+  }
+
   let guidelinesModal: Modal = $state() as Modal;
 </script>
 
@@ -146,9 +177,20 @@
       class="textarea textarea-bordered w-full"
     ></textarea>
 
-    <label class="label" for="image_url"
-      >Image URL for your project's thumbnail</label
-    >
+    <label class="label" for="project_image">Project thumbnail</label>
+    <input
+      id="project_image"
+      type="file"
+      accept="image/*"
+      class="file-input file-input-bordered w-full"
+      disabled={imageUploading}
+      onchange={(event) => uploadProjectImage(event.currentTarget.files?.[0])}
+    />
+    {#if imageUploading}
+      <div class="text-sm text-base-content/70 mt-1">Uploading image...</div>
+    {/if}
+
+    <label class="label" for="image_url">Image URL</label>
     <input
       id="image_url"
       type="text"

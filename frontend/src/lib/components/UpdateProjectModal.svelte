@@ -8,6 +8,8 @@
   import { onMount } from "svelte";
   import Modal from "$lib/components/Modal.svelte";
   import ConfirmationModal from "$lib/components/ConfirmationModal.svelte";
+  import { getAuthenticatedUser } from "$lib/user.svelte";
+  import { env } from "$env/dynamic/public";
 
   // let events: Event[] = $state([]);
   // let fetchedEvents = false;
@@ -33,6 +35,7 @@
 
   let localModal: Modal = $state() as Modal;
   let deleteConfirmation: ConfirmationModal = $state() as ConfirmationModal;
+  let imageUploading = $state(false);
 
   // Sync local modal to bindable prop
   $effect(() => {
@@ -119,6 +122,34 @@
     localModal.closeModal();
     onProjectUpdated?.();
   }
+
+  async function uploadProjectImage(file: File | undefined) {
+    if (!file) return;
+    imageUploading = true;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(`${env.PUBLIC_API_URL}/projects/image-upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getAuthenticatedUser().access_token}`,
+        },
+        body: formData,
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        toast.error(body?.detail || "Image upload failed");
+        return;
+      }
+      preselectedProject.image_url = body.url;
+      toast.success("Image uploaded");
+    } catch {
+      toast.error("Image upload failed");
+    } finally {
+      imageUploading = false;
+    }
+  }
 </script>
 
 <Modal bind:this={localModal} title="Update Project">
@@ -156,6 +187,20 @@
           placeholder="Some cool description"
           class="textarea textarea-bordered w-full"
         ></textarea>
+
+        <label class="label" for="project_image">Project thumbnail</label>
+        <input
+          id="project_image"
+          type="file"
+          accept="image/*"
+          class="file-input file-input-bordered w-full"
+          disabled={imageUploading}
+          onchange={(event) =>
+            uploadProjectImage(event.currentTarget.files?.[0])}
+        />
+        {#if imageUploading}
+          <div class="text-sm text-base-content/70 mt-1">Uploading image...</div>
+        {/if}
 
         <label class="label" for="image_url">Image URL</label>
         <input

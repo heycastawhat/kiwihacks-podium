@@ -5,6 +5,7 @@ tmp/
 quality_check_results/
 sample_projects.csv
 logs/
+uploads/
 backend/podium/cache/generated/
 # Local secrets (docker compose + act)
 .env

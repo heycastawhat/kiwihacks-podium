@@ -1,8 +1,9 @@
 from secrets import token_urlsafe
+from pathlib import Path
 from typing import Annotated
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, HTTPException, Path, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, File, HTTPException, Path as FastAPIPath, Query, Request, UploadFile
 from sqlalchemy import func
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -41,11 +42,52 @@ from podium.constants import (
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
+PROJECT_IMAGE_DIR = Path("/app/uploads/project-images")
+MAX_PROJECT_IMAGE_BYTES = 8 * 1024 * 1024
+ALLOWED_IMAGE_EXTENSIONS = {
+    ".avif",
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".svg",
+    ".webp",
+}
+
 
 def validate_demo_field(demo: str | None, event: Event) -> None:
     """Raise 422 if demo is required but missing."""
     if not event.demo_links_optional and not (demo and demo.strip()):
         raise HTTPException(status_code=422, detail="Demo URL is required for this event")
+
+
+def _public_project_image_url(request: Request, filename: str) -> str:
+    return f"{str(request.base_url).rstrip('/')}/project-images/{filename}"
+
+
+async def _save_project_image(file: UploadFile) -> str:
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=422, detail="Project image must be an image file")
+
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in ALLOWED_IMAGE_EXTENSIONS:
+        raise HTTPException(status_code=422, detail="Unsupported image type")
+
+    PROJECT_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{uuid4()}{suffix}"
+    destination = PROJECT_IMAGE_DIR / filename
+
+    total = 0
+    with destination.open("wb") as out:
+        while chunk := await file.read(1024 * 1024):
+            total += len(chunk)
+            if total > MAX_PROJECT_IMAGE_BYTES:
+                out.close()
+                destination.unlink(missing_ok=True)
+                raise HTTPException(status_code=413, detail="Project image must be 8MB or smaller")
+            out.write(chunk)
+
+    return filename
 
 
 async def _run_background_validation(project_id: UUID) -> None:
@@ -228,10 +270,21 @@ async def join_project(
     return {"message": "Successfully joined project"}
 
 
+@router.post("/image-upload")
+async def upload_project_image(
+    request: Request,
+    file: Annotated[UploadFile, File()],
+    _: Annotated[User, Depends(get_current_user)],
+):
+    """Upload a project thumbnail image and return its durable public URL."""
+    filename = await _save_project_image(file)
+    return {"url": _public_project_image_url(request, filename)}
+
+
 @router.delete("/{project_id}/collaborators/{user_id}")
 async def remove_project_collaborator(
-    project_id: Annotated[UUID, Path(title="Project ID")],
-    user_id: Annotated[UUID, Path(title="Collaborator user ID")],
+    project_id: Annotated[UUID, FastAPIPath(title="Project ID")],
+    user_id: Annotated[UUID, FastAPIPath(title="Collaborator user ID")],
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
@@ -263,7 +316,7 @@ async def remove_project_collaborator(
 
 @router.post("/{project_id}/transfer-owner")
 async def transfer_project_owner(
-    project_id: Annotated[UUID, Path(title="Project ID")],
+    project_id: Annotated[UUID, FastAPIPath(title="Project ID")],
     new_owner_id: Annotated[UUID, Body(embed=True)],
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -322,7 +375,7 @@ async def transfer_project_owner(
 
 @router.put("/{project_id}")
 async def update_project(
-    project_id: Annotated[UUID, Path(title="Project ID")],
+    project_id: Annotated[UUID, FastAPIPath(title="Project ID")],
     project_update: ProjectUpdate,
     background_tasks: BackgroundTasks,
     user: Annotated[User, Depends(get_current_user)],
@@ -363,7 +416,7 @@ async def update_project(
 
 @router.delete("/{project_id}")
 async def delete_project(
-    project_id: Annotated[UUID, Path(title="Project ID")],
+    project_id: Annotated[UUID, FastAPIPath(title="Project ID")],
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
@@ -383,7 +436,7 @@ async def delete_project(
 
 @router.get("/{project_id}")
 async def get_project_endpoint(
-    project_id: Annotated[UUID, Path(title="Project ID")],
+    project_id: Annotated[UUID, FastAPIPath(title="Project ID")],
     session: Annotated[AsyncSession, Depends(get_ro_session)],
 ) -> ProjectPublic:
     """Get a project by ID."""
